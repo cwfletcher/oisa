@@ -29,10 +29,13 @@ sim_vsrcs = \
 	$(base_dir)/testchipip/vsrc/SimBlockDevice.v \
 
 sim_csrcs = \
+	$(base_dir)/rocket-chip/csrc/SimDTM.cc \
 	$(base_dir)/testchipip/csrc/SimSerial.cc \
 	$(base_dir)/testchipip/csrc/SimBlockDevice.cc \
 	$(base_dir)/testchipip/csrc/blkdev.cc \
-	$(base_dir)/testchipip/csrc/verilator-harness.cc
+	$(base_dir)/rocket-chip/csrc/emulator.cc \
+
+#	$(base_dir)/testchipip/csrc/verilator-harness.cc
 
 model_dir = $(build_dir)/$(long_name)
 model_dir_debug = $(build_dir)/$(long_name).debug
