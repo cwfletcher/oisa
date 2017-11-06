@@ -1,11 +1,8 @@
 base_dir=$(abspath ..)
 sim_dir=$(abspath .)
+output_dir=./output
 
-PROJECT ?= example
-MODEL ?= TestHarness
-CONFIG ?= DefaultExampleConfig
-CFG_PROJECT ?= $(PROJECT)
-TB ?= TestDriver
+include $(base_dir)/Makefrag-variables
 
 sim = $(sim_dir)/simulator-$(PROJECT)-$(CONFIG)
 sim_debug = $(sim_dir)/simulator-$(PROJECT)-$(CONFIG)-debug
@@ -19,23 +16,6 @@ LDFLAGS := $(LDFLAGS) -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -L$(sim_dir) -lfesv
 
 include $(base_dir)/Makefrag
 include $(sim_dir)/Makefrag-verilator
-
-long_name = $(PROJECT).$(MODEL).$(CONFIG)
-
-sim_vsrcs = \
-	$(build_dir)/$(long_name).v \
-	$(base_dir)/rocket-chip/vsrc/AsyncResetReg.v \
-	$(base_dir)/testchipip/vsrc/SimSerial.v \
-	$(base_dir)/testchipip/vsrc/SimBlockDevice.v \
-
-sim_csrcs = \
-	$(base_dir)/rocket-chip/csrc/SimDTM.cc \
-	$(base_dir)/testchipip/csrc/SimSerial.cc \
-	$(base_dir)/testchipip/csrc/SimBlockDevice.cc \
-	$(base_dir)/testchipip/csrc/blkdev.cc \
-	$(base_dir)/rocket-chip/csrc/emulator.cc \
-
-#	$(base_dir)/testchipip/csrc/verilator-harness.cc
 
 model_dir = $(build_dir)/$(long_name)
 model_dir_debug = $(build_dir)/$(long_name).debug
@@ -54,6 +34,8 @@ $(model_mk): $(sim_vsrcs) $(INSTALLED_VERILATOR)
 	-CFLAGS "-I$(build_dir) -include $(model_header)"
 	touch $@
 
+# Building simulator also builds makefile .d fragment that is configuration-specific.
+$(build_dir)/$(long_name).d : $(sim) ;
 $(sim): $(model_mk) $(sim_csrcs)
 	$(MAKE) VM_PARALLEL_BUILDS=1 -C $(build_dir)/$(long_name) -f V$(MODEL).mk
 
@@ -67,6 +49,9 @@ $(model_mk_debug): $(sim_vsrcs) $(INSTALLED_VERILATOR)
 
 $(sim_debug): $(model_mk_debug) $(sim_csrcs)
 	$(MAKE) VM_PARALLEL_BUILDS=1 -C $(build_dir)/$(long_name).debug -f V$(MODEL).mk
+
+list:
+	@grep '^[^#[:space:]].*:' Makefile
 
 clean:
 	rm -rf generated-src ./simulator-*

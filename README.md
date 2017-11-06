@@ -1,8 +1,18 @@
-# RISC-V Project Template
+# RISC-V BOOM Project Template
 
-This is a starter template for your custom RISC-V project. It will allow you
-to leverage the Chisel HDL and RocketChip SoC generator to produce a
-RISC-V SoC with MMIO-mapped peripherals, DMA, and custom accelerators.
+**Work in Progress**
+
+This is a starter template for your own RISC-V BOOM project.
+
+BOOM is a superscalar, out-of-order processor that implements RISC-V RV64G ISA.
+
+## Submodules and Subdirectories
+
+## Getting Started
+
+# THE REMAINDER OF THIS FILE IS COPIED FROM PROJECT-TEMPLATE
+
+Original source is from (https://github.com/ucb-bar/project-template).
 
 ## Getting started
 
