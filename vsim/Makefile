@@ -1,33 +1,21 @@
 base_dir=$(abspath ..)
 sim_dir=$(abspath .)
+output_dir=./output
 
-PROJECT ?= example
-MODEL ?= TestHarness
-CONFIG ?= DefaultExampleConfig
-CFG_PROJECT ?= $(PROJECT)
-TB ?= TestDriver
 
-simv = simv-$(PROJECT)-$(CONFIG)
-simv_debug = simv-$(PROJECT)-$(CONFIG)-debug
+include $(base_dir)/Makefrag-variables
 
-default: $(simv)
+sim = simv-$(PROJECT)-$(CONFIG)
+sim_debug = simv-$(PROJECT)-$(CONFIG)-debug
 
-debug: $(simv_debug)
+default: $(sim)
+debug: $(sim_debug)
 
 include $(base_dir)/Makefrag
 
-sim_vsrcs = \
-	$(build_dir)/$(PROJECT).$(MODEL).$(CONFIG).v \
+sim_vsrcs += \
 	$(base_dir)/rocket-chip/vsrc/TestDriver.v \
-	$(base_dir)/rocket-chip/vsrc/AsyncResetReg.v \
 	$(base_dir)/rocket-chip/vsrc/plusarg_reader.v \
-	$(base_dir)/testchipip/vsrc/SimSerial.v \
-	$(base_dir)/testchipip/vsrc/SimBlockDevice.v \
-
-sim_csrcs = \
-	$(base_dir)/testchipip/csrc/SimSerial.cc \
-	$(base_dir)/testchipip/csrc/SimBlockDevice.cc \
-	$(base_dir)/testchipip/csrc/blkdev.cc \
 
 VCS = vcs -full64
 
@@ -51,11 +39,12 @@ VCS_OPTS = -notice -line +lint=all,noVCDE,noONGS,noUI -error=PCWM-L -timescale=1
 
 verilog: $(sim_vsrcs)
 
-$(simv): $(sim_vsrcs) $(sim_csrcs)
+$(build_dir)/$(long_name).d : $(sim) ;
+$(sim): $(sim_vsrcs) $(sim_csrcs)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	-debug_pp
 
-$(simv_debug) : $(sim_vsrcs) $(sim_csrcs)
+$(sim_debug) : $(sim_vsrcs) $(sim_csrcs)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	+define+DEBUG -debug_pp
 
