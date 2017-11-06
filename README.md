@@ -2,9 +2,29 @@
 
 This is a starter template for your own RISC-V BOOM project.
 
-BOOM is a superscalar, out-of-order processor that implements RISC-V RV64G ISA.
-BOOM is a synthesizable core that targets ASIC processes, and is written in the 
+[BOOM](https://github.com/ucb-bar/riscv-boom) is a superscalar, out-of-order 
+processor that implements RISC-V RV64G ISA. BOOM is a synthesizable core that 
+targets ASIC processes, and is written in the 
 [Chisel hardware construction language](http://chisel.eecs.berkeley.edu).
+
+ Feature | BOOM
+--- | ---
+ISA | RISC-V (RV64G)
+Synthesizable |√
+FPGA |√
+Parameterized |√
+Floating Point (IEEE 754-2008) |√
+Atomic Memory Op Support |√
+Caches |√
+Viritual Memory |√
+Boots Linux |√
+Privileged Arch v1.10 |√
+External Debug |√
+
+You can find more information about BOOM here:
+([github.com/ucb-bar/riscv-boom](https://github.com/ucb-bar/riscv-boom)).
+
+**Google group:** (https://groups.google.com/forum/#!forum/riscv-boom)
 
 
 ## Submodules and Subdirectories
