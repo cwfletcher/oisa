@@ -5,8 +5,8 @@ output_dir=./output
 
 include $(base_dir)/Makefrag-variables
 
-sim = simv-$(PROJECT)-$(CONFIG)
-sim_debug = simv-$(PROJECT)-$(CONFIG)-debug
+sim = $(sim_dir)/simv-$(PROJECT)-$(CONFIG)
+sim_debug = $(sim_dir)/simv-$(PROJECT)-$(CONFIG)-debug
 
 default: $(sim)
 debug: $(sim_debug)
@@ -16,6 +16,7 @@ include $(base_dir)/Makefrag
 sim_vsrcs += \
 	$(base_dir)/rocket-chip/vsrc/TestDriver.v \
 	$(base_dir)/rocket-chip/vsrc/plusarg_reader.v \
+	$(base_dir)/rocket-chip/vsrc/SimDTM.v \
 
 VCS = vcs -full64
 
