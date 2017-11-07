@@ -1,5 +1,6 @@
 base_dir=$(abspath ..)
 sim_dir=$(abspath .)
+build_dir=$(sim_dir)/generated-src
 output_dir=./output
 
 

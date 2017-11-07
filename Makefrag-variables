@@ -22,7 +22,12 @@ SBT ?= java -Xmx2G -Xss8M -XX:MaxPermSize=256M -jar $(ROCKETCHIP_DIR)/sbt-launch
 FIRRTL_JAR ?= $(ROCKETCHIP_DIR)/firrtl/utils/bin/firrtl.jar
 FIRRTL ?= java -Xmx2G -Xss8M -XX:MaxPermSize=256M -cp $(FIRRTL_JAR) firrtl.Driver
 
+EXTRA_FIRRTL_ARGS ?=
+
 CHISEL_ARGS ?=
+
+VLSI_MEM_GEN ?= $(base_dir)/rocket-chip/scripts/vlsi_mem_gen
+mem_gen = $(VLSI_MEM_GEN)
 
 # TODO: BOOTROM specified only for dependence tracking.
 #  Remove this as we may choose to use different bootroms?
