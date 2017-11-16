@@ -4,3 +4,6 @@
 [submodule "boom"]
 	path = boom
 	url = https://github.com/ucb-bar/riscv-boom.git
+[submodule "torture"]
+	path = torture
+	url = https://github.com/ucb-bar/riscv-torture.git
