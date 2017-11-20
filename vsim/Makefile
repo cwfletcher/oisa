@@ -3,6 +3,9 @@ sim_dir=$(abspath .)
 build_dir=$(sim_dir)/generated-src
 output_dir=./output
 
+DUMP_FLAG=+vcdplusfile=
+
+
 include $(base_dir)/Makefrag-variables
 
 EXTRA_FIRRTL_ARGS=--infer-rw $(MODEL) --repl-seq-mem -c:$(MODEL):-o:$(build_dir)/$(notdir $(basename $@)).conf
