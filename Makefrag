@@ -51,10 +51,10 @@ $(output_dir)/%.run: $(output_dir)/% $(sim)
 	cd $(sim_dir) && $(sim) +max-cycles=$(timeout_cycles) $< 2> /dev/null 2> $@ && [ $$PIPESTATUS -eq 0 ]
 
 $(output_dir)/%.out: $(output_dir)/% $(sim)
-	cd $(sim_dir) && $(sim) +max-cycles=$(timeout_cycles) +verbose $< $(disasm) $@ && [ $$PIPESTATUS -eq 0 ]
+	cd $(sim_dir) && $(sim) +max-cycles=$(timeout_cycles) $(SIMFLAGS) +verbose $< $(disasm) $@ && [ $$PIPESTATUS -eq 0 ]
 
 $(output_dir)/%.vpd: $(output_dir)/% $(sim_debug)
-	cd $(sim_dir) && $(sim_debug) +max-cycles=$(timeout_cycles) +verbose $(DUMP_FLAG)$@ $< $(disasm) $(patsubst %.vpd,%.out,$@) && [ $$PIPESTATUS -eq 0 ]
+	cd $(sim_dir) && $(sim_debug) +max-cycles=$(timeout_cycles) $(SIMFLAGS) +verbose $(DUMP_FLAG)$@ $< $(disasm) $(patsubst %.vpd,%.out,$@) && [ $$PIPESTATUS -eq 0 ]
 
 
 run: run-asm-tests run-bmark-tests
