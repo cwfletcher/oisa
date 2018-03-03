@@ -42,6 +42,8 @@ sim_vsrcs = \
 
 sim_csrcs = \
 	$(base_dir)/rocket-chip/csrc/SimDTM.cc \
+	$(base_dir)/rocket-chip/csrc/SimJTAG.cc \
+	$(base_dir)/rocket-chip/csrc/remote_bitbang.cc \
 #	$(base_dir)/testchipip/csrc/blkdev.cc \
 #	$(base_dir)/testchipip/csrc/SimBlockDevice.cc \
 #	$(base_dir)/testchipip/csrc/SimSerial.cc \
