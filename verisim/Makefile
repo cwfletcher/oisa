@@ -5,6 +5,10 @@ output_dir=./output
 
 SIMFLAGS=
 DUMP_FLAG=-v
+# permissive flags guard the VCS plusArgs parameters. Unused for  Verilator.
+PERMISSIVE=
+PERMISSIVEOFF=
+
 
 
 include $(base_dir)/Makefrag-variables

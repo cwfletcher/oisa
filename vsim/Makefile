@@ -5,6 +5,9 @@ output_dir=./output
 
 SIMFLAGS=-q
 DUMP_FLAG=+vcdplusfile=
+# permissive flags guard the VCS plusArgs parameters.
+PERMISSIVE=+permissive
+PERMISSIVEOFF=+permissive-off
 
 
 include $(base_dir)/Makefrag-variables
