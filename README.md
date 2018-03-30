@@ -149,7 +149,7 @@ or `make output/rv64ui-p-simple.vpd` to generate a waveform.
 
 Read the Makefile to find all of the special targets.
 
-### BOOM takes forever to compile ###
+### BOOM takes forever to compile. ###
 
 You can add to your bash profile:
 
@@ -212,7 +212,67 @@ located in `TestDriver.testHarness.dut.tile.core`:
    * dis_valids_* (are any instructions being dispatched to the issue units?)
    * dis_uops_*_pc (what are the PCs of the dispatched instructions?)
 
+### How do I get a commit log out of BOOM? Out of spike? ###
 
+Go to `boom/src/main/scala/common/consts.scala` and change `COMMIT_LOG_PRINTF`
+to `true`. That will output a log of committed instructions.
+
+You can rebuild the `spike` ISA simulator to also print out a commit log to 
+compare against. 
+
+    cd rocket-chip/riscv-tools/riscv-isa-sim;
+    mkdir build
+    cd build
+    ../configure --prefix=$RISCV --with-fesvr=$RISCV --with-isa=rv64imafd --enable-commitlog
+
+Your new spike will ALWAYS print out a commit log to `stderr`. I recommend 
+you change the `prefix` to a different directory (and also build a new riscv-fesvr 
+to be placed in this same directory), rename your spike to something else
+(e.g., `lspike`), and add this `prefix/bin` to your path. In this manner, you won't
+overwrite your regular `spike` binary.
+
+
+### Why are the commit logs of BOOM and spike so different? ###
+
+Frustrating, right? 
+
+By default, the BOOM simulators built within the `verisim` and `vsim` 
+directories are tethered to the riscv-fesvr (to handle binary loading 
+and proxying syscalls). The actual binary loading is performed using
+the Debug Transport Module (DTM) which implements the RISC-V External
+Debug Specification. The `riscv-fesvr` magically sends signals to the 
+DTM to interrupt BOOM and have it execute out of the Debug Program 
+Buffer. In this manner, BOOM slowly loads the binary into its target
+memory. 
+
+To proxy syscalls, the DTM occasionally interrupts the BOOM core to 
+have it read a special `tohost` memory location. If the `tohost` value
+is non-zero, the BOOM core has a message for the riscv-fesvr to handle.
+
+Spike is also tethered to the riscv-fesvr, but it can instantly load the 
+test binary directly (and magically) into its target memory. There is no
+invocation of the Debug specification to do this. 
+
+Eventually, BOOM and spike will converge after they have each loaded the
+test binary into their memories. They will again diverge on ocassion to
+send proxy syscalls to the host, spinning for indeterminate amounts of
+time while waiting for a `fromhost` message (by repeatedly reading an
+agreed-upon `fromhost` address in memory).
+
+There are other ways to load binaries and control the design-under-test.
+The (https://github.com/ucb-bar/testchipip) repository provides a Tethered
+Serial Interface (TSI) which can directly and coherently write into the target
+memory to load programs and query for `tohost` communications. This requires
+a different `bootrom` as well as different top-level I/O connections to
+wire-up this TSI. This is less invasive than repeatedly polling through the
+DTM, but also more special-purpose built.
+
+Or, one could build a self-hosting BOOM system. But you need to provide the
+appropriate drivers, IP blocks, and `bootrom` to communicate with the system
+in some manner. An example self-hosted rocket-chip system that follows the 
+`project-template` layout is the (https://github.com/sifive/freedom) platform.
+
+Processors are hard.
 
 # Additional Information from the Project-Template README
 
