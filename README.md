@@ -70,7 +70,7 @@ will work with BOOM, just the following steps are necessary.
     
 ### Compiling and running the Verilator simulation
 
-To compile a BOOM simulator, run make in the "verisim" directory.
+To compile a BOOM simulator, run `make` in the "verisim" directory.
 This will elaborate the BoomConfig from the boom.system project.
 
     cd verisim
@@ -89,6 +89,14 @@ to run one of the riscv-tools assembly tests.
  Or just a smaller regression suite:
  
     make run-regression-tests
+    
+ If you would like to get a `.vpd` waveform, you can instead use:
+ 
+    make output/rv64ui-p-simple.vpd
+    
+ Or:
+ 
+    make run-debug
 
 If you later create your own project, you can use environment variables to
 build an alternate configuration. The different variables are
@@ -116,7 +124,95 @@ number of failures like this:
 
     make rnight R_SIM=../vsim/simv-boom.system-BoomConfig OPTIONS="-C config/default.config -t 5 -m 30"
       
+# FAQ #
+
+### How do I use VCS instead of Verilator? ###
+
+The `verisim` directory manages the Verilator build and run process. 
+
+The `vsim` directory manages the VCS build and run process. 
+
+In either directory you can build and then run the `riscv-tests` using `make && make debug`.
+
+### How do I get a waveform? ###
+
+The testharness/build-system is currently set up to provide a `vpd` waveform file.
+
+In the `verisim` or `vsim` directories, instead of invoking `make`, you can invoke `make debug` 
+to build a waveform-output-enabled BOOM simulator. The simulator will now be suffixed with `-debug`.
+*Warning:* Verilator takes a very long time to compile with waveform output enabled.
+
+To run *all* of the riscv-tests with waveform output, you can invoke `make run-debug`.
+
+Individually, you run a specific test as `make output/rv64ui-p-simple.out` to run a regular test 
+or `make output/rv64ui-p-simple.vpd` to generate a waveform.
+
+Read the Makefile to find all of the special targets.
+
+### BOOM takes forever to compile ###
+
+You can add to your bash profile:
+
+    export MAKEFLAGS="-j `echo \`nproc\`*2/2|bc`" 
     
+This will spawn as many threads as you have cores when invoking `make`, speed up compilation, 
+and run the `riscv-tests` in parallel. 
+
+**Warning**: if you are performing VCS simulation you will burn through your precious licenses.
+
+**Warning**: if you are writing a lot of data to the *.out files or *.vpd files you may hose your file system.
+
+Unfortunately, many of the structures in an OOO processor scale worse than linearly. 
+Also, some compilers struggle with large functions that arise when you turn the auto-generated
+Verilog into straight-line C++ code that is flattened across the whole design. 
+As such, VCS compiles much faster than Verilator (but runs much slower).
+
+Here are some times as measured on my machine using the verilator simulator:
+
+  * `make CONFIG=MegaBoomConfig run` takes 57 minutes.
+
+  * `make CONFIG=BoomConfig run` takes 39 minutes.
+  
+  * `make CONFIG=SmallBoomConfig run` takes 15 minutes.
+
+To improve the speed of your run-debug loop, you can instead invoke a smaller set of tests:
+
+````
+make run-regression-tests
+````
+
+### Help! BOOM isn't working! ###
+
+First verify the software is not an issue. Run spike first:
+
+````
+# Verify it works on spike.
+spike --isa=rv64imafd my_program
+
+# Then we can run on BOOM.
+./emulator-freechips.rocketchip.system-SmallBoomConfig my_program 
+````
+
+Also verify the riscv-tools you built is the one pointed to within 
+the boom-template/rocket-chip/riscv-tools repository. Otherwise a 
+version mismatch can easily occur!
+
+
+### How do I debug BOOM? ###
+
+I recommend opening up the waveform and starting with the following signals, 
+located in `TestDriver.testHarness.dut.tile.core`:
+
+   * debug_tsc_reg (cycle counter)
+   * debug_irt_reg (retired instruction counter)
+   * rob_io_commit_valids_* (the commit signals)
+   * csr_io_pc (roughly the commit pc)
+   * br_unit_brinfo_valid (was a branch/jalr resolved?)
+   * br_unit_brinfo_mispredict (was a branch/jalr mispredicted?)
+   * dis_valids_* (are any instructions being dispatched to the issue units?)
+   * dis_uops_*_pc (what are the PCs of the dispatched instructions?)
+
+
 
 # Additional Information from the Project-Template README
 
