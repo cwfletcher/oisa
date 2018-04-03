@@ -126,6 +126,24 @@ number of failures like this:
       
 # FAQ #
 
+### Git submodules are confusing -- how do I update to the latest BOOM? ###
+
+The [boom](https://github.com/ucb-bar/riscv-boom) and
+[rocket-chip](https://github.com/freechipsproject/rocket-chip) repositories are
+included as git submodules. This allows us to tag specific versions that should
+work together. You can think of git submodules as "pointers" to specific commits.
+
+To update this repository and then update
+
+    cd boom-template
+    git pull                         # update this repo and the pointers to the submodules.
+    git submodule update --recursive # update the contents of the submodules (and their submodules).
+    git status                       # check boom/rocket-chip don't have "new commits".
+
+As rocket-chip itself has additional git submodules, you will need to perform a
+recursive submodule update. This may take a while.
+
+
 ### How do I use VCS instead of Verilator? ###
 
 The `verisim` directory manages the Verilator build and run process. 
