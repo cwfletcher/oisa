@@ -292,6 +292,72 @@ in some manner. An example self-hosted rocket-chip system that follows the
 
 Processors are hard.
 
+### VIM/bash isn't a development environment! How do I setup an IntelliJ IDE? ###
+
+Boom-template/rocket-chip/boom comes with a quite a project hierarchy that may be hard
+to keep track of in its entirity. Here's some steps to get started with IntelliJ. 
+This section is a work-in-progress, so please share your own tips and hints on the 
+mailing list.
+
+**Step 1:** Install a JDK (you have probably already done this, but you need to find it).
+If you are using OSX, I recommend:
+
+```bash
+brew tap caskroom/versions
+brew update
+brew cask install java8
+```
+
+This will give you a jdk that is probably in `/Library/Java/JavaVirtualMachines`.
+
+**Step 2:** Follow the above instructions to check out `boom-template` and build a BOOM emulator.
+Run it through some tests to make sure everything works. This is important, as this will
+build a `lib` file full of `jar` files of Chisel, FIRRTL, RocketChip, BOOM, and others.
+
+**Step 3:** Import a project in IntelliJ. Select `boom-template/build.sbt`. Use Java 1.8. 
+
+**Step 4:** Right-click on `boom-template/lib` in your project hierarchy and `Add as Library`.
+
+**Step 5:** Right-click on `boom-template/boom/src` and `Mark Directory as -> Sources Root`. 
+IntelliJ can't find source code that is not under `boom-template/src/main/scala` without help.
+
+**Step 6:** Right-click on `boom/src/main/scala/system/Generator` and `Run`. It will fail.
+
+**Step 7:** Open `Run->Edit Configurations..` and add the following arguments to your
+`program arguments` (main class should be `boom.system.Generator`). Replace `${TEMPLATE}`
+with what is appropriate for your system.
+
+```bash
+${TEMPLATE}/verisim/generated-src boom.system TestHarness boom.system BoomConfig
+```
+
+That string comes from `Makefrag-variables`. You can change BoomConfig to match your desired
+`${CONFIG}`.
+
+**Step 8:** `Run` your `Generator` target. It should now generate firrtl code. However,
+the rest of the `boom-template` system relies on Makefiles to string everything together.
+You can either build additional `Run` configurations, or connect to the existing Makefiles.
+
+**Step 9:** Go to `Preferences->Plugins` and add `Makefile support`.
+
+**Step 10:** Right-click on on `boom-template/verisim/Makefile` and `run Makefile.`
+This should compile a BOOM verilator-based emulator.
+
+**Step 11:** Edit your `Run->Edit Configurations..` to add new Run configurations for
+additional Make targets and `${CONFIG}` options. For development, 
+`make $CONFIG=SmallBoomConfig run-regression-tests` is one recommended command.
+You can also choose to invoke Make manually in your terminal.
+
+**Step 12:** Browse the boom source code. Notice that you can highlight a variable and see
+its definition (or see its instantiations). You can also browse the `View->Tool Windows->Structure`
+to see what variables are in scope for a particular class. Click on `show inherited` to see more,
+in particular, what the `traits` might be bringing in to scope!
+
+**Step 13:** Provide feedback and pull requests to this README (or elsewhere). I am hoping
+that some find this useful and can provide more guidance on how to improve the IntelliJ/
+boom-template flow for those that may follow.
+
+
 # Additional Information from the Project-Template README
 
 The original source of boom-template derives from (https://github.com/ucb-bar/project-template).
