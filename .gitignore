@@ -5,3 +5,4 @@ target
 /vsim
 /verisim
 *.swp
+.idea
