@@ -1,3 +1,5 @@
+TEST
+
 # RISC-V BOOM Project Template
 
 This is a starter template for your own RISC-V BOOM project.
