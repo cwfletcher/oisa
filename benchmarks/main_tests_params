@@ -1,0 +1,82 @@
+- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Name            Description                                 Input size (L1 way version - L1way=4KB)             Input size (L2 way version - L2way=64KB)                Input size (Big size version - what is this?)i                  Comments
+                                                                top_physical_address = 4096(4KB)                    top_physical_Address = 65536(64KB)
+                                                                data_entry: L1 data 0x1000 -> 0xFFFFFFFF            data_entry: L1 data no bound
+                                                                pls_entry:  L1 pls  0x0    -> 0xFFF                 pls_entry:  L2 pls  0x0->0xFFFF
+                                                                                                                    L2 other:   L2 data 0x10000 -> 0xFFFFFFFF
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+(o)binary_search    Binary search for value in an array         An array of 1K integers(fit in 1 L1 way)            An array of 16K integers(fit in 1 L2 way)               An array of 2^20 integers(use path oram whose stash fit in 1 L2 way for cisc)
+                    naive scanning for risc
+
+(o)find_max         Find the maxium element in an array         An array of 1K integers(we don't care)              An array of 16K integers(we don't care)                 An array of 2^20 integers(we don't care)
+
+(o)int_sort         Sort an array of integers                   An array of 256 integers(fit in 1 L1 way)           An array of 4K integers(fit in 1 L2 way)                An array of 2^20 integers(no pls, simply bitonic sort for cisc)
+
+(o)kmeans           Kmeans classification algorithm             2^10 points (we don't care how many),               2^12 points (we don't care how many),                   2^14 points (we don't care how many)                            we can still use pls region if No.centroids < 16K/3 = 5000(L2)      O(num_clusters * num_points) 
+                    with dimension = 2                          2^5 centroids (centroids fit in 1 L1 way)           2^7 centroids (centroids fit in 1 L1 way)               2^8 centroids (centroids fit in 1 L1 way)                                                      No.centroids < 1K/3 = 333(L1)
+
+(o)matmult          Multiply two matrices                       Two 2^6-by-2^6 matrix (we don't care size)          Two 2^8-by-2^8 matrix (we don't care size)              Two 2^10-by-2^10 matrix (we don't care size)                    O(N^3)
+
+(o)page_rank        PageRank Algorithm on sparse Graph          2^8 vertices (fit in 1 L1 way),                     2^12 vertices (fit in 1 L2 way),                        2^15 vertices (path oram whose stash fit in L2)                 It seems that graphlab can reduce complexity
+                    degree = 4
+
+n/o oram            Non-oblivious ORAM routine                  N = 2^10 (posmap can fit in 1 L1 way)               N = 2^14 (posmap can fit in 1 L2 way)                   N = 2^20 (posmap cannot fit in PLS)
+                    for trusted hardware and                    B = 1words (stash can fit in 1 L1 way)              B = 8words (stash can fit in 1 L2 way)                  B = 32words (Stash can fit in 2 L2 way)
+                    oblivious ORAM routine for
+                    untrusted hardware(where side-
+                    channel exists)
+                    
+
+(o)dnn              Deep Neural Network(Two FC layers           128 inputs, layer1 512 nodes, layer2 8 nodes        1K inputs, layer1 4K nodes, layer2 64 nodes             8K, 32K, 512
+                    followed by a softmax layer)                (we don't care)                                     (we don't care)                                         (we don't care)
+
+(o)pq               Pop/push a heap-based priority              heapsize = 1K integers (fit in 1 L1 way)            heapsize = 16K integers(fit in 1 L2 way)                heapsize = 2^20 integers (use path oram whose stash fit in L2 for cisc)
+                    queue 10 times each(starting full)                                                                                                                      (push/pop once)
+
+(o)sparse_dijkstra  Sparse Dijkstra algorithm(single-source     No.vertices = 2^7 (pq, outdegree list, dist can     No.vertices = 2^10 (pq, outdegree list, dist can        No. vertices = 2^12 (pq, outdegree list, dist all forms
+                    shortest path)                              fit in 1 L1 way together)                           fit in 0.5 L2 way together)                             path oram)
+                    O(E^2) complexity                           No.edges = 2^9 (fit in 3 L1 way)                    No.edges = 2^12 (fit in 1.5 L2 way)                     No. edges = 2^14 (pathoram whose stash/posmap fit in L2)
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    Memory Access Experiment
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Compare: Scan with obliv_pathoram with OISA style access:
+
+
+
+OISA_1L1: array_size < 4KB = 1K word
+OISA_1L2: array_size < 64KB = 16 word
+OISA_stash_in_1L1_posmap_in_1L1: N <= 2^10, B <= 1word
+OISA_stash_in_1L2_posmap_in_1L2: N <= 2^14, B <= 8word
+OISA_stash_in_1L2: N <= 2^70, B <= 32-3word
+OISA_stash_in_2L2: N <= 2^70, B <= 64-3word
+
+
+array (1 word per element)          array (16 word per element)
+512     PLS_1L1                     16      PLS_1L1
+1K      PLS_1L1                     32      PLS_1L1
+2K      PLS_2L1                     64      PLS_2L1
+4K      PLS_4L1                     128     PLS_4L1
+
+8K      PLS_1L2                     256     PLS_1L2
+16K     PLS_1L2                     512     PLS_1L2
+
+32K     PLS_2L2                     1K      PLS_2L2
+
+64K     ORAM_stash_in_1L2           2K      ORAM_stash_in_1L2
+128K    ORAM_stash_in_1L2           4K      ORAM_stash_in_1L2
+256K    ORAM_stash_in_1L2           8K      ORAM_stash_in_1L2
+512K    ORAM_stash_in_1L2           16K     ORAM_stash_in_1L2
+1M      ORAM_stash_in_1L2           32K     ORAM_stash_in_1L2
+                                    128K    ORAM_stash_in_1L2
+                                    512K    ORAM_stash_in_1L2
+
+
+
+

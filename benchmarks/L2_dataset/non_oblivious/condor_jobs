@@ -1,0 +1,28 @@
+Executable = /scratch/Jiyong/OISA_SIM/benchmarks/L2_dataset/non_oblivious/run1benchmark.py
+
+Transfer_executable = False
+
+get_env = True
+
+request_CPUs = 1
+
+InitialDir = /scratch/Jiyong/OISA_SIM/benchmarks/L2_dataset/non_oblivious
+
+Output = /scratch/Jiyong/OISA_SIM/benchmarks/L2_dataset/non_oblivious/condor_out/$(exe).out
+Error  = /scratch/Jiyong/OISA_SIM/benchmarks/L2_dataset/non_oblivious/condor_out/$(exe).err
+Log    = /scratch/Jiyong/OISA_SIM/benchmarks/L2_dataset/non_oblivious/condor_out/$(exe).log
+
+Arguments = "$(exe)"
+
+Queue exe from (
+    binary_search
+    dnn
+    find_max
+    int_sort
+    kmeans
+    matrix_mult
+    page_rank
+    PQ
+    dijkstra
+    oram
+)
