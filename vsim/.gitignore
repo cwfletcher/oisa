@@ -1,2 +1,3 @@
 !Makefile
 !.gitignore
+!generated-src/boom.system.TestHarness.BoomConfig.behav_srams.v
