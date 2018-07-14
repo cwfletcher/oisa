@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "PQ.h"
-#include "../../../primitives/lib/asm.h"
+#include "../include/asm.h"
 
 static int seed = 12;
 static int N = 1023;
@@ -34,19 +34,12 @@ int main(){
     Pop_PQ(&pq, 1);
     Push_PQ(&pq, &val, 1);
 
-    sim_rdtsc();
     Pop_PQ(&pq,1 );
-    sim_rdtsc();
     Push_PQ(&pq, &val, 1);
-    sim_rdtsc();
     Pop_PQ(&pq,1 );
-    sim_rdtsc();
     Push_PQ(&pq, &val, 1);
-    sim_rdtsc();
     Pop_PQ(&pq,1 );
-    sim_rdtsc();
     Push_PQ(&pq, &val, 1);
-    sim_rdtsc();
 
     Delete_PQ(&pq);
     return 0;

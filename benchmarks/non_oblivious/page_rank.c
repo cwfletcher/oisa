@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../../primitives/lib/asm.h"
+#include "../include/asm.h"
 
 static int numVertices = 256;
 static int degree = 4;
@@ -79,15 +79,30 @@ int main(){
     }
 
     ComputeOutgoingEdges(&graph);
-    sim_rdtsc();
+    int cnt1, cnt2;
+
+    _rdtsc(cnt1);
     PageRank(&graph, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t1 = cnt2 - cnt1;
+
+    _rdtsc(cnt1);
     PageRank(&graph, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t2 = cnt2 - cnt1;
+
+    _rdtsc(cnt1);
     PageRank(&graph, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t3 = cnt2 - cnt1;
+
+    _rdtsc(cnt1);
     PageRank(&graph, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t4 = cnt2 - cnt1;
+
+    printf("%d %d %d %d\n", t1,t2,t3,t4);
+
 
     return 0;
 }

@@ -3,8 +3,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../../primitives/lib/asm.h"
-#include "../../../primitives/sort/sort.h"
+#include "../include/asm.h"
 
 static int seed = 0;
 static int numVertices = 256;
@@ -58,13 +57,61 @@ static inline float Fa(tuple* u){
     return (0.15 / numVertices) + (0.85 * u->v_agg);
 }
 
+/************ Sorting functions begin ****************/
+static int _key1_idx;
+static int _key2_idx;
+static int _block_sz;
+
+void checkPowerOfTwo(int val) {
+    while (val % 2 == 0)
+        val = val >> 1;
+    if (val != 1){
+        fprintf(stderr, "ERROR: bitonic sort only works for array with length of power of two!\n");
+        /*assert(val == 1);*/
+    }
+}
+
+void CompAndSwap(int arr[], int i, int j, int dir1, int dir2){
+    int dir1_eq  = (arr[i*_block_sz+_key1_idx] == arr[j*_block_sz+_key1_idx]);
+    int act_dir1 = (arr[i*_block_sz+_key1_idx] >  arr[j*_block_sz+_key1_idx]);
+    int act_dir2 = (arr[i*_block_sz+_key2_idx] >  arr[j*_block_sz+_key2_idx]);
+    int if_swap = ((!dir1_eq) && (act_dir1 == dir1)) || ((dir1_eq) && (act_dir2 == dir2));
+    for (int k = 0; k < _block_sz; k++)
+        _oswap(if_swap, &arr[i*_block_sz]+k, &arr[j*_block_sz]+k);
+}
+
+void BitonicMerge(int arr[], int low, int cnt, int dir1, int dir2){
+    if (cnt > 1){
+        int k = cnt / 2;
+        for (int i=low; i<low + k; i++)
+            CompAndSwap(arr, i, i+k, dir1, dir2);
+        BitonicMerge(arr, low, k, dir1, dir2);
+        BitonicMerge(arr, low+k, k, dir1, dir2);
+    }
+}
+
+void BitonicSubSort(int arr[], int low, int cnt, int dir1, int dir2){
+    if (cnt > 1){
+        int k = cnt / 2;
+        BitonicSubSort(arr, low, k, 1, 1);
+        BitonicSubSort(arr, low+k, k, 0, 0);
+        BitonicMerge(arr, low, cnt, dir1, dir2);
+    }
+}
+void BitonicSort(int arr[], int N, int block_sz, int key1_idx, int dir1, int key2_idx, int dir2){
+    _key1_idx = key1_idx;
+    _key2_idx = key2_idx;
+    _block_sz = block_sz;
+    checkPowerOfTwo(N);
+    BitonicSubSort(arr, 0, N, dir1, dir2);
+}
+/*********** Sorting functions end *************/
+
 void __attribute__((noinline)) Scatter(tuple* G, int b){
     if (b)  // OUT: src - ASCENDING, isVertex: DESCENDING 
-        BitonicSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 0, 1, 2, 0);
-        /*MergeSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 0, 1, 2, 0);*/
+        BitonicSort((int*)G, N, sizeof(tuple) / sizeof(int), 0, 1, 2, 0);
     else    // IN:  dst - ASCENDING, isVertex: DESCENDING
-        BitonicSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 1, 1, 2, 0);
-        /*MergeSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 1, 1, 2, 0);*/
+        BitonicSort((int*)G, N, sizeof(tuple) / sizeof(int), 1, 1, 2, 0);
 
     tuple tempVertex;
     tempVertex.v_PR = 1;
@@ -73,28 +120,26 @@ void __attribute__((noinline)) Scatter(tuple* G, int b){
     for(int i = 0; i < N; i++){
         int isVertex = G[i].isVertex;
         float fs_val = Fs(&tempVertex);
-        cmov(isVertex,  (int*)&G[i].v_PR,    (int*)&tempVertex.v_PR);
-        cmov(isVertex,  &G[i].v_numOutEdges, &tempVertex.v_numOutEdges);
-        cmov(isVertex,  (int*)&G[i].v_agg,   (int*)&tempVertex.v_agg);
-        cmov(!isVertex, (int*)&fs_val,       (int*)&G[i].e_weight); 
+        _cmov(isVertex,  G[i].v_PR,          &tempVertex.v_PR);
+        _cmov(isVertex,  G[i].v_numOutEdges, &tempVertex.v_numOutEdges);
+        _cmov(isVertex,  G[i].v_agg,         &tempVertex.v_agg);
+        _cmov(!isVertex, fs_val,             &G[i].e_weight); 
     }
 }
 
 void __attribute__((noinline)) Gather(tuple* G, int b){
     if (b)  // OUT: src - ASCENDING, isVertex - ASECNEDING
-        BitonicSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 0, 1, 2, 1);
-        /*MergeSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 0, 1, 2, 1);*/
+        BitonicSort((int*)G, N, sizeof(tuple) / sizeof(int), 0, 1, 2, 1);
     else    // IN:  dst - ASECNDING, isVertex - ASECENDING
-        BitonicSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 1, 1, 2, 1);
-        /*MergeSort_General((int*)G, N, sizeof(tuple) / sizeof(int), 1, 1, 2, 1);*/
+        BitonicSort((int*)G, N, sizeof(tuple) / sizeof(int), 1, 1, 2, 1);
 
     float agg = 0;
     for(int i = 0; i < N; i++){
         int isVertex = G[i].isVertex;
         float fg_val = Fg(agg, &G[i]);
-        cmov(isVertex,  (int*)&agg,    (int*)&G[i].v_agg);
-        cmov(isVertex,  (int*)&zero,   (int*)&agg);
-        cmov(!isVertex, (int*)&fg_val, (int*)&agg);
+        _cmov(isVertex,  agg,    &G[i].v_agg);
+        _cmov(isVertex,  zero,   &agg);
+        _cmov(!isVertex, fg_val, &agg);
     }
 }
 
@@ -147,13 +192,20 @@ int main(){
     }
 
     ComputeOutgoingEdges(G);
-    sim_rdtsc();
+    int cnt1, cnt2;
+    _rdtsc(cnt1);
     PageRank(G, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t1 = cnt2 - cnt1;
+    _rdtsc(cnt1);
     PageRank(G, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t2 = cnt2 - cnt1;
+    _rdtsc(cnt1);
     PageRank(G, 1);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+    int t3 = cnt2 - cnt1;
 
+    printf("%d %d %d\n", t1, t2, t3);
     return 0;
 }

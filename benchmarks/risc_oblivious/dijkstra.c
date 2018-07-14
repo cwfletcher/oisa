@@ -11,9 +11,8 @@
 
 #include <limits.h>
 #include "PQ.h"
-#include "../../../primitives/lib/asm.h"
-#include "../../../primitives/sort/sort.h"
-#include "../../../primitives/scan_oram/scan_oram.h"
+#include "../include/asm.h"
+#include "../include/scan_oram/scan_oram.h"
 
 static int seed = 0;
 static int zero = 0;
@@ -21,6 +20,78 @@ static int Degree = 4;
 static int nVertices = (1 << 7) - 1;
 static int nEdges = ((1 << 7) - 1) * 4; // nVertices * Degree;
 
+/************* Sorting functions begin ***************/
+#define ASCENDING   1
+#define DESCENDING  0
+
+static int* buf_L;
+static int* buf_R;
+static int _key_idx;
+static int _dir;
+static int _block_sz;
+
+void Merge(int arr[], int l, int m, int r){
+    int h, i, j, k;
+    int len_L = m - l + 1;
+    int len_R = r - m;
+    
+    for(i = 0; i < len_L; i++)
+        for(h = 0; h < _block_sz; h++)
+            buf_L[i * _block_sz + h] = arr[(l + i) * _block_sz + h];
+    for(j = 0; j < len_R; j++)
+        for(h = 0; h < _block_sz; h++)
+            buf_R[j * _block_sz + h] = arr[(m + 1 + j) * _block_sz + h];
+
+    i = 0;
+    j = 0;
+    k = l;
+    
+    while (i < len_L && j < len_R){
+        if ( (buf_L[i*_block_sz+_key_idx] <= buf_R[j*_block_sz+_key_idx] && _dir == ASCENDING) || (buf_L[i*_block_sz+_key_idx] >= buf_R[j*_block_sz+_key_idx] && _dir == DESCENDING) ) {
+            for(h = 0; h < _block_sz; h++)
+                arr[k*_block_sz + h] = buf_L[i*_block_sz + h];
+            i++;
+        } else {
+            for(h = 0; h < _block_sz; h++)
+                arr[k*_block_sz + h] = buf_R[j*_block_sz + h];
+            j++;
+        }
+        k++;
+    } 
+    while (i < len_L){
+        for(h = 0; h < _block_sz; h++)
+            arr[k*_block_sz + h] = buf_L[i*_block_sz + h];
+        i++;
+        k++;
+    }
+    while (j < len_R){
+        for(h = 0; h < _block_sz; h++)
+            arr[k*_block_sz + h] = buf_R[j*_block_sz + h];
+        j++;
+        k++;
+    }
+}
+void MergeSubSort(int arr[], int l, int r){
+    if (l < r) {
+        int m = l + (r-l)/2;
+
+        MergeSubSort(arr, l, m);
+        MergeSubSort(arr, m+1, r);
+
+        Merge(arr, l, m, r);
+    }
+}
+void MergeSort(int arr[], int N, int key_idx, int dir, int block_sz){
+    _dir = dir;
+    _key_idx = key_idx;
+    _block_sz = block_sz;
+    buf_L = (int*) malloc(sizeof(int) * N * block_sz);
+    buf_R = (int*) malloc(sizeof(int) * N * block_sz);
+    MergeSubSort(arr, 0, N-1);
+    free(buf_L);
+    free(buf_R);
+}
+/************ Sorting functions end *****************/
 
 typedef struct {
     int   nAddedEdges;
@@ -79,8 +150,8 @@ void __attribute__((noinline)) Dijkstra(Graph* graph, int src, int* dists){
         /// If not innerLoop
         Top_PQ(&pq, node);
         Pop_PQ(&pq, innerLoop_False);
-        cmov(innerLoop_False, &node[0], &u);
-        cmov(innerLoop_False, &node[1], &dist);
+        _cmov(innerLoop_False, node[0], &u);
+        _cmov(innerLoop_False, node[1], &dist);
 
         int dist_u = 0;
         ScanORAM_Read(dists, nVertices, 1, &dist_u, u);
@@ -89,8 +160,8 @@ void __attribute__((noinline)) Dijkstra(Graph* graph, int src, int* dists){
         int dist_u_eq_dist = (dist_u == dist);
         int nOutDegreesAcc_u = 0;
         ScanORAM_Read(graph->nOutDegreesAcc, nVertices+1, 1, &nOutDegreesAcc_u, u);
-        cmov(innerLoop_False && dist_u_eq_dist, &nOutDegreesAcc_u, &i);              // i = 0
-        cmov(innerLoop_False && dist_u_eq_dist, &one, &innerLoop) ;      // innerLoop = True
+        _cmov(innerLoop_False && dist_u_eq_dist, nOutDegreesAcc_u, &i);              // i = 0
+        _cmov(innerLoop_False && dist_u_eq_dist, one, &innerLoop) ;      // innerLoop = True
 
         /// Else
         //      If i < nOutDegrees[u]
@@ -100,22 +171,22 @@ void __attribute__((noinline)) Dijkstra(Graph* graph, int src, int* dists){
         ScanORAM_Read(graph->edges, nEdges*2, 3, edge, i);
         v = edge[1];
         int dist_p_w = dist + edge[2];
-        cmov(innerLoop_True && i_lt_nOutDegreesAcc_up1, &dist_p_w, &newdist);
+        _cmov(innerLoop_True && i_lt_nOutDegreesAcc_up1, dist_p_w, &newdist);
         int ip1 = i+1;
-        cmov(innerLoop_True && i_lt_nOutDegreesAcc_up1, &ip1, &i);
+        _cmov(innerLoop_True && i_lt_nOutDegreesAcc_up1, ip1, &i);
             
         //          If newdist < dis_v
         int dist_v = 0;
         ScanORAM_Read(dists, nVertices, 1, &dist_v, v);
         int newdist_lt_dist_v = (newdist < dist_v);
-        cmov(innerLoop_True && i_lt_nOutDegreesAcc_up1 && newdist_lt_dist_v, &newdist, &dist_v);
+        _cmov(innerLoop_True && i_lt_nOutDegreesAcc_up1 && newdist_lt_dist_v, newdist, &dist_v);
         ScanORAM_Write(dists, nVertices, 1, &dist_v, v);
         node[0] = v;
         node[1] = newdist;
         Push_PQ(&pq, node, innerLoop_True && i_lt_nOutDegreesAcc_up1 && newdist_lt_dist_v);
 
         //      Else
-        cmov(innerLoop_True && !i_lt_nOutDegreesAcc_up1, &zero, &innerLoop);
+        _cmov(innerLoop_True && !i_lt_nOutDegreesAcc_up1, zero, &innerLoop);
     }
 
     Delete_PQ(&pq);
@@ -145,7 +216,7 @@ void OrganizeEdges(Graph* graph){
     for(int i = 0; i < nVertices; i++){
         graph->nOutDegreesAcc[i+1] = graph->nOutDegrees[i] + graph->nOutDegreesAcc[i];
     }
-    MergeSort_Block(graph->edges, nEdges*2, 0, 1, 3);
+    MergeSort(graph->edges, nEdges*2, 0, 1, 3);
 }
 
 int main(){
@@ -167,12 +238,15 @@ int main(){
     int src = 0;
     int* dists = (int*) malloc(sizeof(int) * nVertices);
 
-    sim_rdtsc();
+    int cnt1, cnt2;
+    _rdtsc(cnt1);
     Dijkstra(&graph, src, dists);
-    sim_rdtsc();
+    _rdtsc(cnt2);
+
+    int t1 = cnt2 - cnt1;
 
     // Print the shortest distances stored in dists[]
-    /*printf("Vertex Distances from Source (%d):\n", src);*/
-    /*for(int i = 0; i < nVertices; i++)*/
-        /*printf("%d\t\t%d\n", i, dists[i]);*/
+    printf("Vertex Distances from Source (%d):\n", src);
+    for(int i = 0; i < nVertices; i++)
+        printf("%d\t\t%d\n", i, dists[i]);
 }

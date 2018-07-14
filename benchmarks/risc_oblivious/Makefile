@@ -1,68 +1,71 @@
-all: bsearch findmax intsort kmeans matmult pagerank oram dnn pq dijkstra
+x86: bsearch findmax intsort kmeans matmult pagerank oram dnn pq dijkstra
+#rv64: bsearch_rv64 findmax_rv64 intsort_rv64 kmeans_rv64 matmult_rv64 pagerank_rv64 oram_rv64 dnn_rv64 pq_rv64 dijkstra_rv64
+rv64: bsearch_rv64 findmax_rv64 intsort_rv64 kmeans_rv64 matmult_rv64 pagerank_rv64 dnn_rv64 pq_rv64 dijkstra_rv64
 
-sim: bsearch_sim findmax_sim intsort_sim kmeans_sim matmult_sim pagerank_sim oram_sim dnn_sim pq_sim dijkstra_sim
 
-# For local run
+GCC=gcc
+RV64_GCC=riscv64-unknown-elf-gcc
+
 bsearch:
-	gcc ../lib/asm.c ../lib/misc.c binary_search.c -static -O3 -Wall -o binary_search.o
+	$(GCC) ../include/asm.c ../include/misc.c binary_search.c -static -O3 -Wall -o binary_search.o
 
 findmax:
-	gcc ../lib/asm.c find_max.c -static -O3 -Wall -o find_max.o
+	$(GCC) ../include/asm.c find_max.c -static -O3 -Wall -o find_max.o
 
 intsort:
-	gcc ../lib/asm.c ../../../primitives/sort/bitonic_sort.c int_sort.c -O3 -Wall -o int_sort.o
+	$(GCC) ../include/asm.c ../../../primitives/sort/bitonic_sort.c int_sort.c -O3 -Wall -o int_sort.o
 
 kmeans:
-	gcc ../../../primitives/scan_oram/scan_oram.c ../lib/asm.c kmeans.c -O3 -Wall -o kmeans.o -lm
+	$(GCC) ../../../primitives/scan_oram/scan_oram.c ../include/asm.c kmeans.c -O3 -Wall -o kmeans.o -lm
 
 matmult:
-	gcc matrix_mult.c -O3 -Wall -o matrix_mult.o
+	$(GCC) matrix_mult.c -O3 -Wall -o matrix_mult.o
 
 pagerank:
-	gcc ../../../primitives/sort/bitonic_sort.c ../../../primitives/sort/merge_sort.c ../lib/asm.c page_rank.c -O3 -Wall -o page_rank.o  -g 
+	$(GCC) ../../../primitives/sort/bitonic_sort.c ../../../primitives/sort/merge_sort.c ../include/asm.c page_rank.c -O3 -Wall -o page_rank.o  -g 
 
 oram:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/path_oram/obliv_path_oram.c ../../../primitives/sort/merge_sort.c ../../../primitives/sort/bitonic_sort.c ../../../primitives/scan_oram/scan_oram.c oram.c -static -O3 -Wall -o oram.o
+	$(GCC) ../../../primitives/include/asm.c ../../../primitives/include/misc.c ../../../primitives/path_oram/obliv_path_oram.c ../../../primitives/sort/merge_sort.c ../../../primitives/sort/bitonic_sort.c ../../../primitives/scan_oram/scan_oram.c oram.c -static -O3 -Wall -o oram.o
 
 dnn:
-	gcc dnn.c -static -O3 -Wall -o dnn.o -lm
+	$(GCC) dnn.c -static -O3 -Wall -o dnn.o -lm
 
 pq:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/scan_oram/scan_oram.c PQ.c -static -O3 -Wall -o PQ.o
+	$(GCC) ../../../primitives/include/asm.c ../../../primitives/include/misc.c ../../../primitives/scan_oram/scan_oram.c PQ.c -static -O3 -Wall -o PQ.o
 
 dijkstra:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/scan_oram/scan_oram.c ../../../primitives/sort/merge_sort.c dijkstra.c -static -O3 -Wall -o dijkstra.o
+	$(GCC) ../../../primitives/include/asm.c ../../../primitives/include/misc.c ../../../primitives/scan_oram/scan_oram.c ../../../primitives/sort/merge_sort.c dijkstra.c -static -O3 -Wall -o dijkstra.o
 
-# For M2S
-bsearch_sim:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/path_oram/obliv_path_oram.c ../../../primitives/sort/merge_sort.c ../../../primitives/sort/bitonic_sort.c ../../../primitives/scan_oram/scan_oram.c binary_search.c -static -O3 -Wall -D M2S -m32 -o binary_search.o
+# For RISCV(boom/spike)
+bsearch_rv64:
+	$(RV64_GCC) ../include/asm.c binary_search.c -O3 -Wall -o binary_search.o
 
-findmax_sim:
-	gcc ../../../primitives/lib/asm.c find_max.c -static -O3 -Wall -D M2S -m32 -o find_max.o
+findmax_rv64:
+	$(RV64_GCC) ../include/asm.c find_max.c -O3 -Wall -o find_max.o
 
-intsort_sim:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/sort/bitonic_sort.c int_sort.c -O3 -Wall -D M2S -m32 -o int_sort.o
+intsort_rv64:
+	$(RV64_GCC) ../include/asm.c int_sort.c -O3 -Wall -o int_sort.o
 
-kmeans_sim:
-	gcc ../../../primitives/scan_oram/scan_oram.c ../../../primitives/lib/asm.c kmeans.c -O3 -Wall -D M2S -m32 -o kmeans.o -lm
+kmeans_rv64:
+	$(RV64_GCC) ../include/scan_oram/scan_oram.c ../include/asm.c kmeans.c -O3 -Wall -o kmeans.o -lm
 
-matmult_sim:
-	gcc matrix_mult.c -O3 -Wall -D M2S -m32 -o matrix_mult.o
+matmult_rv64:
+	$(RV64_GCC) matrix_mult.c -O3 -Wall -o matrix_mult.o
 
-pagerank_sim:
-	gcc ../../../primitives/sort/bitonic_sort.c ../../../primitives/sort/merge_sort.c ../../../primitives/lib/asm.c page_rank.c -O3 -Wall -D M2S -m32 -o page_rank.o
+pagerank_rv64:
+	$(RV64_GCC) ../include/asm.c page_rank.c -O3 -Wall -o page_rank.o
 
-oram_sim:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/path_oram/obliv_path_oram.c ../../../primitives/sort/merge_sort.c ../../../primitives/sort/bitonic_sort.c ../../../primitives/scan_oram/scan_oram.c oram.c -static -O3 -Wall -D M2S -m32 -o oram.o
+oram_rv64:
+	$(RV64_GCC) ../include/asm.c ../../../primitives/path_oram/obliv_path_oram.c ../../../primitives/sort/merge_sort.c ../../../primitives/sort/bitonic_sort.c ../../../primitives/scan_oram/scan_oram.c oram.c -static -O3 -Wall -D M2S -m32 -o oram.o
 
-dnn_sim:
-	gcc dnn.c -static -O3 -Wall -D M2S -m32 -o dnn.o -lm
+dnn_rv64:
+	$(RV64_GCC) dnn.c -static -O3 -Wall -o dnn.o -lm
 
-pq_sim:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/scan_oram/scan_oram.c PQ.c -static -O3 -Wall -D M2S -m32 -o PQ.o
+pq_rv64:
+	$(RV64_GCC) ../include/asm.c ../include/scan_oram/scan_oram.c PQ.c -static -O3 -Wall -o PQ.o
 
-dijkstra_sim:
-	gcc ../../../primitives/lib/asm.c ../../../primitives/lib/misc.c ../../../primitives/scan_oram/scan_oram.c ../../../primitives/sort/merge_sort.c dijkstra.c -static -O3 -Wall -D M2S -m32 -o dijkstra.o
+dijkstra_rv64:
+	$(RV64_GCC) ../include/asm.c ../include/scan_oram/scan_oram.c dijkstra.c -static -O3 -Wall -o dijkstra.o
 
 clean:
 	rm *.o

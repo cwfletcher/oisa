@@ -110,6 +110,6 @@ int main(){
 
     // Print the shortest distances stored in dist[]
     printf("Vertex Distances from Source (%d):\n", src);
-    for(int i = 0; i < graph.nVertices; i++)
+    for(int i = 0; i < nVertices; i++)
         printf("%d\t\t%d\n", i, dist[i]);
 }

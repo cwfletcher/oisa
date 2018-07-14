@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../../primitives/path_oram/path_oram.h"
+#include "../include/path_oram/path_oram.h"
 
 static int Z = 4;
 static int C = 200;

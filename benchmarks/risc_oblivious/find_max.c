@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include "../../../primitives/lib/asm.h"
+#include "../include/asm.h"
 
 static int N = 1024;
 static int seed = 0;
@@ -10,8 +9,8 @@ static int seed = 0;
 void __attribute__((noinline)) FindMax(int arr[], int* max_idx, int* max_val){
     for (int i = 0; i < N; i++){
         int larger = (arr[i] > *max_val);
-        cmov(larger, &i, max_idx);
-        cmov(larger, &arr[i], max_val);
+        _cmov(larger, i, max_idx);
+        _cmov(larger, arr[i], max_val);
     }
 }
 

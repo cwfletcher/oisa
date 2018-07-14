@@ -124,21 +124,21 @@ int main(){
     else
         printf("Above error\n");
 
-    /*[> Print all centroids <]*/
-    /*for(int i = 0; i < num_clusters; i++){*/
-        /*printf("centroid %d is (", i);*/
-        /*for(int j = 0; j < dim; j++)*/
-            /*printf("%f,", centroids[i][j]);*/
-        /*printf(")\n");*/
-    /*}*/
+    /* Print all centroids */
+    for(int i = 0; i < num_clusters; i++){
+        printf("centroid %d is (", i);
+        for(int j = 0; j < dim; j++)
+            printf("%f,", centroids[i][j]);
+        printf(")\n");
+    }
 
-    /*[> Print all data labels <]*/
-    /*for(int i = 0; i < num_points; i++){*/
-        /*printf("data point %d (", i);*/
-        /*for(int j = 0; j < dim; j++)*/
-            /*printf("%f,", data_points[i][j]);*/
-        /*printf(") is in cluster %d; distance = %f\n", data_labels[i], distance(data_points[i], centroids[data_labels[i]], dim));*/
-    /*}*/
+    /* Print all data labels */
+    for(int i = 0; i < num_points; i++){
+        printf("data point %d (", i);
+        for(int j = 0; j < dim; j++)
+            printf("%f,", data_points[i][j]);
+        printf(") is in cluster %d; distance = %f\n", data_labels[i], distance(data_points[i], centroids[data_labels[i]], dim));
+    }
 
     /* Free data */
     for(int i = 0; i < num_points; i++)

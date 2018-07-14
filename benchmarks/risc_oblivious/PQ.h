@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "../../../primitives/lib/asm.h"
-#include "../../../primitives/lib/misc.h"
-#include "../../../primitives/scan_oram/scan_oram.h"
+#include "../include/asm.h"
+#include "../include/misc.h"
+#include "../include/scan_oram/scan_oram.h"
 
 static int one = 1;
 
@@ -49,15 +49,15 @@ void Pop_PQ(PQ* pq, int real){
 
     int* last_item = (int*) malloc(sizeof(int) * pq->block_size);
     ScanORAM_Read (pq->scan_oram, pq->capacity+1, pq->block_size, last_item, pq->size);
-    cmovn(real, last_item, &pq->scan_oram[pq->block_size], pq->block_size);
+    _cmovn(real, last_item, &pq->scan_oram[pq->block_size], pq->block_size);
 
     // if (real) pq->size--
     int pqsize_m1 = pq->size - 1;
-    cmov(real, &pqsize_m1, &pq->size);
+    _cmov(real, pqsize_m1, &pq->size);
 
     int k = 1;
     int done = 0;
-    cmov(!real, &one, &done);   // if (!real) done = True
+    _cmov(!real, one, &done);   // if (!real) done = True
 
     int* item_k     = (int*) malloc(sizeof(int) * pq->block_size);
     int* item_left  = (int*) malloc(sizeof(int) * pq->block_size);
@@ -74,8 +74,8 @@ void Pop_PQ(PQ* pq, int real){
         int right_idx = k * 2 + 1;
 
         for(int j = (1 << (i+1)); j < (1 << (i+2)); j++){
-            cmovn( (left_idx == j), &pq->scan_oram[pq->block_size * j], item_left,  pq->block_size);
-            cmovn((right_idx == j), &pq->scan_oram[pq->block_size * j], item_right, pq->block_size);
+            _cmovn( (left_idx == j), &pq->scan_oram[pq->block_size * j], item_left,  pq->block_size);
+            _cmovn((right_idx == j), &pq->scan_oram[pq->block_size * j], item_right, pq->block_size);
         }
 
         int l_lt_r =  less_than(item_left, item_right);
@@ -86,16 +86,16 @@ void Pop_PQ(PQ* pq, int real){
         if_swap_k_right = !done &&  l_lt_r && !k_ge_r;
         if_swap_k_left  = !done && !l_lt_r && !k_ge_l;
 
-        oswap(if_swap_k_left,  &k, &left_idx);
-        oswap(if_swap_k_right, &k, &right_idx);
+        _oswap(if_swap_k_left,  &k, &left_idx);
+        _oswap(if_swap_k_right, &k, &right_idx);
 
         int* item_to_write = NULL;
         for(int j = (1 << i); j < (1 << (i+1)); j++){
-            cmov(j == left_idx,  &item_left,  &item_to_write);
-            cmov(j == right_idx, &item_right, &item_to_write);
-            cmov(j == k,         &item_k,     &item_to_write);
+            _cmov(j == left_idx,  item_left,  &item_to_write);
+            _cmov(j == right_idx, item_right, &item_to_write);
+            _cmov(j == k,         item_k,     &item_to_write);
 
-            cmovn(item_to_write != NULL, item_to_write, &pq->scan_oram[pq->block_size * j], pq->block_size);
+            _cmovn(item_to_write != NULL, item_to_write, &pq->scan_oram[pq->block_size * j], pq->block_size);
         }
     }
     ScanORAM_Write(pq->scan_oram, pq->capacity+1, pq->block_size, item_k, k);
@@ -105,7 +105,7 @@ void Pop_PQ(PQ* pq, int real){
 void Push_PQ(PQ* pq, int* new_item, int real){
     // if(real) pq->size++
     int pqsize_p1 = pq->size + 1;
-    cmov(real, &pqsize_p1, &pq->size);
+    _cmov(real, pqsize_p1, &pq->size);
 
     assert (pq->size <= pq->capacity);
 
@@ -114,7 +114,7 @@ void Push_PQ(PQ* pq, int* new_item, int real){
 
     int k = pq->size;
     int done = 0;
-    cmov(!real, &one, &done); // if (!real) done = 1;
+    _cmov(!real, one, &done); // if (!real) done = 1;
 
     int* item_k      = (int*) malloc(sizeof(int) * pq->block_size);
     int* item_parent = (int*) malloc(sizeof(int) * pq->block_size);
@@ -129,7 +129,7 @@ void Push_PQ(PQ* pq, int* new_item, int real){
 
         int parent_in_current_level = 0;
         for(int j = (1 << (pq->max_iter-i-1)); j < (1 << (pq->max_iter-i)); j++){
-            cmovn(j == parent_idx, &pq->scan_oram[pq->block_size * j], item_parent, pq->block_size);
+            _cmovn(j == parent_idx, &pq->scan_oram[pq->block_size * j], item_parent, pq->block_size);
             parent_in_current_level = parent_in_current_level || (j == parent_idx);
         }
 
@@ -137,17 +137,17 @@ void Push_PQ(PQ* pq, int* new_item, int real){
         done = done || (parent_in_current_level && !parent_lt_k);
         if_swap_k_parent = !done && parent_in_current_level && parent_lt_k;
 
-        oswap(if_swap_k_parent, &k, &parent_idx);
+        _oswap(if_swap_k_parent, &k, &parent_idx);
 
         int* item_to_write = NULL;
         for(int j = (1 << (pq->max_iter-i-1)); j < (1 << (pq->max_iter-i)); j++){
-            cmov(j == parent_idx, &item_parent, &item_to_write);
-            cmov(j == k,          &item_k,      &item_to_write);
+            _cmov(j == parent_idx, item_parent, &item_to_write);
+            _cmov(j == k,          item_k,      &item_to_write);
 
-            cmovn(item_to_write != NULL, item_to_write, &pq->scan_oram[pq->block_size * j], pq->block_size);
+            _cmovn(item_to_write != NULL, item_to_write, &pq->scan_oram[pq->block_size * j], pq->block_size);
         }
     }
-    cmovn(if_swap_k_parent, item_k, &pq->scan_oram[pq->block_size], pq->block_size);
+    _cmovn(if_swap_k_parent, item_k, &pq->scan_oram[pq->block_size], pq->block_size);
 }
 
 /// Extract the largest value

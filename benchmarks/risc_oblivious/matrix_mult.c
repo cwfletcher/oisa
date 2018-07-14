@@ -52,14 +52,14 @@ int main(){
 
     MatrixMult(A, B, C);
 
-    /*printf("Matrix A is:\n");*/
-    /*PrintMatrix(A, A_nrow, A_ncol);*/
+    printf("Matrix A is:\n");
+    PrintMatrix(A, A_nrow, A_ncol);
 
-    /*printf("Matrix B is:\n");*/
-    /*PrintMatrix(B, B_nrow, B_ncol);*/
+    printf("Matrix B is:\n");
+    PrintMatrix(B, B_nrow, B_ncol);
 
-    /*printf("Matrix C is:\n");*/
-    /*PrintMatrix(C, C_nrow, C_ncol);*/
+    printf("Matrix C is:\n");
+    PrintMatrix(C, C_nrow, C_ncol);
 
     free(A);
     free(B);

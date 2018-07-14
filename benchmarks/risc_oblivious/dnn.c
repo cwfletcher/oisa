@@ -82,9 +82,9 @@ int main(){
     Inference(input, output, W1, B1, W2, B2);
 
     // Print output
-    /*for(int i = 0; i < nOutputs; i++)*/
-        /*printf("%f ", output[i]);*/
-    /*printf("\n");*/
+    for(int i = 0; i < nOutputs; i++)
+        printf("%f ", output[i]);
+    printf("\n");
 
     free(input);
     free(output);

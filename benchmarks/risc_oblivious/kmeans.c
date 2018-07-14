@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
-#include "../../../primitives/lib/asm.h"
-#include "../../../primitives/scan_oram/scan_oram.h"
+#include "../include/asm.h"
+#include "../include/scan_oram/scan_oram.h"
 
 static int seed = 0;
 static int one = 1;
@@ -65,8 +65,8 @@ int __attribute__((noinline)) Kmeans(float** data, float error, float** centroid
 
                 // if dist < min_dist, label[i] = j, min_dist = dist
                 int cent_closer = (dist < min_dist);
-                cmov(cent_closer, &j,          &labels[i]);
-                cmov(cent_closer, (int*)&dist, (int*)&min_dist);
+                _cmov(cent_closer, j,    &labels[i]);
+                _cmov(cent_closer, dist, &min_dist);
             }
             curr_total_dist += min_dist;
         }
@@ -105,7 +105,7 @@ int __attribute__((noinline)) Kmeans(float** data, float error, float** centroid
             for(int j = 0; j < dim; j++){
                 // if cluster_sizes[i] == 0, to avoid divide_by_zero, we force cluster_size[i] = 1
                 int cluster_size = cluster_sizes[i];
-                cmov(!cluster_size, &one, &cluster_size);
+                _cmov(!cluster_size, one, &cluster_size);
                 centroids[i][j] = temp_centroids[j][i] / cluster_size;
             }
         }
