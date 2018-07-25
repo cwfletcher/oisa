@@ -13,6 +13,14 @@
     __asm__ __volatile__ (  "csrrs %0,cycle,x0" \
                             : "=r"(counter) );  \
 
+#define _seal(reg)                              \
+    __asm__ __volatile__ (  "seal %0,%0,0x0"    \
+                            : "+r"(reg) );      \
+
+#define _unseal(reg)                            \
+    __asm__ __volatile__ (  "unseal %0,%0,0x0"  \
+                            : "+r"(reg) );      \
+
 #define _cmov(if_mov, src, dst_addr)                                \
     __asm__ __volatile__ (  "lw t1,(%2)\n\t"                        \
                             "cmovw t1,%0,%1\n\t"                    \
