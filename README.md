@@ -1,9 +1,9 @@
 # Data Oblivious ISA Extensions for Side Channel-Resistant and High Performance Computing (Hardware)
 
-## 0. Current status
+## 0. Current status (Pre-NDSS)
 We use this version mainly for hardware area overhead analysis (the performance aspect is analyzed on a different framework).
 
-We are currently working on another up-to-date version which can be run on a FPGA. The code will be updated shortly.
+We are currently working on another up-to-date version which can be run on a FPGA board. The code will be updated shortly.
 
 ## 1. About this paper
 
