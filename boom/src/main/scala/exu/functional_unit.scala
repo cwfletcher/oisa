@@ -122,9 +122,9 @@ class FuncUnitResp(data_width: Int)(implicit p: Parameters) extends BoomBundle()
 
 class BypassData(num_bypass_ports: Int, data_width: Int)(implicit p: Parameters) extends BoomBundle()(p)
 {
-   val valid    = Vec(num_bypass_ports, Bool())
-   val uop      = Vec(num_bypass_ports, new MicroOp())      // has rd_tag for IFT
-   val data     = Vec(num_bypass_ports, UInt(width = data_width))
+   val valid = Vec(num_bypass_ports, Bool())
+   val uop   = Vec(num_bypass_ports, new MicroOp())      // has rd_tag for IFT
+   val data  = Vec(num_bypass_ports, UInt(width = data_width))
 
    def getNumPorts: Int = num_bypass_ports
    override def cloneType: this.type = new BypassData(num_bypass_ports, data_width).asInstanceOf[this.type]

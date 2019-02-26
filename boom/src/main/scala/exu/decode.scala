@@ -84,7 +84,7 @@ class CtrlSigs extends Bundle
    }
 }
 
-
+/* OISA: add decoding for new instructions */
 object XDecode extends DecodeConstants
 {
 // scalastyle:off
@@ -134,7 +134,7 @@ object XDecode extends DecodeConstants
    SLL     -> List(Y, N, X, uopSLL  , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X , UInt(1), Y, N, N, N, N, N, N, CSR.N),
    ADD     -> List(Y, N, X, uopADD  , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X , UInt(1), Y, N, N, N, N, N, N, CSR.N),
    SUB     -> List(Y, N, X, uopSUB  , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X , UInt(1), Y, N, N, N, N, N, N, CSR.N),
-   CMOV    -> List(Y, N, X, uopCMOV , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X ,  MT_X,  UInt(1), Y, N, N, N, N, N, N, CSR.N),
+   CMOV    -> List(Y, N, X, uopCMOV , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X,  UInt(1), Y, N, N, N, N, N, N, CSR.N),
    SLT     -> List(Y, N, X, uopSLT  , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X , UInt(1), Y, N, N, N, N, N, N, CSR.N),
    SLTU    -> List(Y, N, X, uopSLTU , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X , UInt(1), Y, N, N, N, N, N, N, CSR.N),
    AND     -> List(Y, N, X, uopAND  , IQT_INT, FU_ALU , RT_FIX, RT_FIX, RT_FIX, N, IS_I, N, N, N, N, N, M_X  , MT_X , UInt(1), Y, N, N, N, N, N, N, CSR.N),

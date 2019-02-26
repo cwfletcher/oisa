@@ -269,7 +269,6 @@ class IssueSlot(num_slow_wakeup_ports: Int)(implicit p: Parameters)
    }
 
 
-
    // Handle branch misspeculations
    val updated_br_mask = GetNewBrMask(io.brinfo, slotUop)
 

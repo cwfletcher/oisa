@@ -786,9 +786,9 @@ class BoomCore(implicit p: Parameters, edge: freechips.rocketchip.tilelink.TLEdg
       {
          for (i <- 0 until exe_units(w).numBypassPorts)
          {
-            bypasses.valid(idx)    := exe_units(w).io.bypass.valid(i)
-            bypasses.uop(idx)      := exe_units(w).io.bypass.uop(i)
-            bypasses.data(idx)     := exe_units(w).io.bypass.data(i)
+            bypasses.valid(idx) := exe_units(w).io.bypass.valid(i)
+            bypasses.uop(idx)   := exe_units(w).io.bypass.uop(i)
+            bypasses.data(idx)  := exe_units(w).io.bypass.data(i)
             idx = idx + 1
          }
       }
@@ -869,10 +869,10 @@ class BoomCore(implicit p: Parameters, edge: freechips.rocketchip.tilelink.TLEdg
    {
       for (j <- 0 until exe_units(i).num_rf_write_ports)
       {
-         val wbresp = exe_units(i).io.resp(j)
-         val wbpdst = wbresp.bits.uop.pdst
+         val wbresp   = exe_units(i).io.resp(j)
+         val wbpdst   = wbresp.bits.uop.pdst
          val wbrd_tag = wbresp.bits.uop.rd_tag
-         val wbdata = wbresp.bits.data
+         val wbdata   = wbresp.bits.data
 
          def wbIsValid(rtype: UInt) =
             wbresp.valid && wbresp.bits.uop.ctrl.rf_wen && wbresp.bits.uop.dst_rtype === rtype

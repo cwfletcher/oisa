@@ -288,18 +288,18 @@ class RegisterRead(
       io.exe_reqs(w).bits.uop.rs1_tag := exe_reg_rs1_tag(w)
       io.exe_reqs(w).bits.uop.rs2_tag := exe_reg_rs2_tag(w)
       io.exe_reqs(w).bits.uop.rs3_tag := exe_reg_rs3_tag(w)
-      if (num_read_ports > 0) 
+      if (num_read_ports > 0)
       {
-         io.exe_reqs(w).bits.rs1_data     := exe_reg_rs1_data(w)
+         io.exe_reqs(w).bits.rs1_data := exe_reg_rs1_data(w)
       }
       if (num_read_ports > 1)
       {
-         io.exe_reqs(w).bits.rs2_data     := exe_reg_rs2_data(w)
+         io.exe_reqs(w).bits.rs2_data := exe_reg_rs2_data(w)
       }
       if (num_read_ports > 2)
       {
-         io.exe_reqs(w).bits.rd_data      := exe_reg_rd_data(w)
-         io.exe_reqs(w).bits.rs3_data     := exe_reg_rs3_data(w)
+         io.exe_reqs(w).bits.rs3_data := exe_reg_rs3_data(w)
+         io.exe_reqs(w).bits.rd_data  := exe_reg_rd_data(w)
       }
    }
 }
