@@ -1,0 +1,348 @@
+diff -r ./fdiv.scala /home/jiyongy2/OISA_NDSS19/OISA_BOOM/boom/src/main/scala/exu/fdiv.scala
+81,82d80
+<    val s_idle :: s_comp :: Nil = Enum(UInt(), 2)
+<    val state = Reg(init=s_idle)
+90d87
+<    //printf("r_buffer_val is %d\n", r_buffer_val)
+136,141d132
+<    val count = Reg(UInt(0, log2Ceil(27)))
+< 
+<    when (state === s_comp)
+<    {
+<       count := count + 1.U
+<    }
+156d146
+<    //printf("may fire input = %d\n", may_fire_input)
+172,175d161
+<       assert (state === s_idle, "ERROR: FDivSqrt is firing a instruction to divsqrt unit while divsqrt unit is still in execution")
+<       count := UInt(0)
+<       state := s_comp
+< 
+187,197c173,176
+<    val r_out1_val = Reg(init=false.B)
+<    val r_out1_uop = Reg(new MicroOp)
+<    val r_out1_flags_double = Reg(Bits())
+<    val r_out1_wdata_double = Reg(Bits())
+<    val r_out2_val = Reg(init=false.B)
+<    val r_out2_uop = Reg(new MicroOp)
+<    val r_out2_flags_double = Reg(Bits())
+<    val r_out2_wdata_double = Reg(Bits())
+< 
+<    //printf("r_out1_val = %d\n", r_out1_val);
+<    //printf("r_out2_val = %d\n", r_out2_val);
+---
+>    val r_out_val = Reg(init=false.B)
+>    val r_out_uop = Reg(new MicroOp)
+>    val r_out_flags_double = Reg(Bits())
+>    val r_out_wdata_double = Reg(Bits())
+199c178
+<    output_buffer_available := !r_out1_val && !r_out2_val
+---
+>    output_buffer_available := !r_out_val
+201,202c180
+<    r_out1_uop.br_mask := GetNewBrMask(io.brinfo, r_out2_uop)
+<    r_out2_uop.br_mask := GetNewBrMask(io.brinfo, r_out2_uop)
+---
+>    r_out_uop.br_mask := GetNewBrMask(io.brinfo, r_out_uop)
+204,208c182
+<    when (IsKilledByBranch(io.brinfo, r_out1_uop) || io.req.bits.kill)
+<    {
+<       r_out1_val := false.B
+<    }
+<    when (io.resp.ready || IsKilledByBranch(io.brinfo, r_out2_uop) || io.req.bits.kill)
+---
+>    when (io.resp.ready || IsKilledByBranch(io.brinfo, r_out_uop) || io.req.bits.kill)
+210c184
+<       r_out2_val := false.B
+---
+>       r_out_val := false.B
+216,220c190,194
+<       r_out1_val := !r_divsqrt_killed && !IsKilledByBranch(io.brinfo, r_divsqrt_uop) && !io.req.bits.kill
+<       r_out1_uop := r_divsqrt_uop
+<       r_out1_uop.br_mask := GetNewBrMask(io.brinfo, r_divsqrt_uop)
+<       r_out1_wdata_double := sanitizeNaN(divsqrt.io.out, tile.FType.D)
+<       r_out1_flags_double := divsqrt.io.exceptionFlags
+---
+>       r_out_val := !r_divsqrt_killed && !IsKilledByBranch(io.brinfo, r_divsqrt_uop) && !io.req.bits.kill
+>       r_out_uop := r_divsqrt_uop
+>       r_out_uop.br_mask := GetNewBrMask(io.brinfo, r_divsqrt_uop)
+>       r_out_wdata_double := sanitizeNaN(divsqrt.io.out, tile.FType.D)
+>       r_out_flags_double := divsqrt.io.exceptionFlags
+224,241d197
+<    assert (!(r_out1_val && (divsqrt.io.outValid_div || divsqrt.io.outValid_sqrt)),
+<       "[fdiv] Buffered output being overwritten by another output from the fdiv/fsqrt unit.")
+< 
+<    when (count === UInt(27) || (r_out1_val && r_out1_uop.rd_tag === UInt(0)))
+<    {
+<       assert (state === s_comp, "ERROR: FDivSqrtUnit has count reaches max latency while is not in compute state")
+<       assert (r_out1_val, "ERROR: FDivSqrtUnit: fdivsqrt has not send the final result when max latency expires")
+<       r_out1_val := false.B
+< 
+<       r_out2_val := true.B && !IsKilledByBranch(io.brinfo, r_out1_uop) && !io.req.bits.kill
+<       r_out2_uop := r_out1_uop
+<       r_out2_uop.br_mask := GetNewBrMask(io.brinfo, r_out1_uop)
+<       r_out2_flags_double := r_out1_flags_double
+<       r_out2_wdata_double := r_out1_wdata_double
+< 
+<       count := UInt(0)
+<       state := s_idle
+<    }
+242a199,200
+>    assert (!(r_out_val && (divsqrt.io.outValid_div || divsqrt.io.outValid_sqrt)),
+>       "[fdiv] Buffered output being overwritten by another output from the fdiv/fsqrt unit.")
+246c204
+<    downvert_d2s.io.in := r_out2_wdata_double
+---
+>    downvert_d2s.io.in := r_out_wdata_double
+248c206
+<    val out_flags = r_out2_flags_double | Mux(r_divsqrt_fin.singleIn, downvert_d2s.io.exceptionFlags, 0.U)
+---
+>    val out_flags = r_out_flags_double | Mux(r_divsqrt_fin.singleIn, downvert_d2s.io.exceptionFlags, 0.U)
+250,251c208,209
+<    io.resp.valid := r_out2_val && !IsKilledByBranch(io.brinfo, r_out2_uop)
+<    io.resp.bits.uop := r_out2_uop
+---
+>    io.resp.valid := r_out_val && !IsKilledByBranch(io.brinfo, r_out_uop)
+>    io.resp.bits.uop := r_out_uop
+255c213
+<          box(r_out2_wdata_double, true.B))
+---
+>          box(r_out_wdata_double, true.B))
+257,258c215,216
+<    io.resp.bits.fflags.bits.uop := r_out2_uop
+<    io.resp.bits.fflags.bits.uop.br_mask := GetNewBrMask(io.brinfo, r_out2_uop)
+---
+>    io.resp.bits.fflags.bits.uop := r_out_uop
+>    io.resp.bits.fflags.bits.uop.br_mask := GetNewBrMask(io.brinfo, r_out_uop)
+diff -r ./fppipeline.scala /home/jiyongy2/OISA_NDSS19/OISA_BOOM/boom/src/main/scala/exu/fppipeline.scala
+245c245,247
+<             fregfile.io.write_ports(w_cnt).valid := wbresp.valid && wbresp.bits.uop.ctrl.rf_wen
+---
+>             fregfile.io.write_ports(w_cnt).valid :=
+>                wbresp.valid &&
+>                wbresp.bits.uop.ctrl.rf_wen
+248d249
+<             fregfile.io.write_ports(w_cnt).bits.ift_tag := wbresp.bits.uop.rd_tag
+diff -r ./functional_unit.scala /home/jiyongy2/OISA_NDSS19/OISA_BOOM/boom/src/main/scala/exu/functional_unit.scala
+27c27
+< import boom.bpu.{BpredType, BranchPredInfo, BTBsaUpdate}
+---
+> import boom.bpu.{BpredType, BranchPredInfo, BoomBTBUpdate}
+97c97
+<    val uop = new MicroOp()  // include IFT tags
+---
+>    val uop = new MicroOp()
+101d100
+<    val rd_data  = UInt(width = data_width) // only used for ALU unit
+113c112
+<    val uop = new MicroOp()  // has rd_tag for IFT
+---
+>    val uop = new MicroOp()
+125,127c124,126
+<    val valid    = Vec(num_bypass_ports, Bool())
+<    val uop      = Vec(num_bypass_ports, new MicroOp())      // has rd_tag for IFT
+<    val data     = Vec(num_bypass_ports, UInt(width = data_width))
+---
+>    val valid = Vec(num_bypass_ports, Bool())
+>    val uop   = Vec(num_bypass_ports, new MicroOp())
+>    val data  = Vec(num_bypass_ports, UInt(width = data_width))
+168c167
+<    val btb_update      = Valid(new BTBsaUpdate)
+---
+>    val btb_update      = Valid(new BoomBTBUpdate)
+270d268
+<    var op1_tag = Bool(false)
+277,278d274
+<       op1_tag  = Mux(io.req.bits.uop.ctrl.op1_sel.asUInt === OP1_RS1 , io.req.bits.uop.rs1_tag,
+<                                                                        Bool(false))
+284,285d279
+<       op1_tag  = Mux(io.req.bits.uop.ctrl.op1_sel.asUInt === OP1_RS1 , io.req.bits.uop.rs1_tag,
+<                                                                        Bool(false))
+294,301d287
+<    var op2_tag  = Mux(io.req.bits.uop.ctrl.op2_sel === OP2_RS2,  io.req.bits.uop.rs2_tag,
+<                                                                  Bool(false))
+< 
+<    // operand rd select
+<    val op0_data = Mux(io.req.bits.uop.uopc === uopCMOV || io.req.bits.uop.uopc === uopCMOVW, io.req.bits.rd_data,
+<                                                                                              UInt(0))
+<    val op0_tag  = Mux(io.req.bits.uop.uopc === uopCMOV || io.req.bits.uop.uopc === uopCMOVW, io.req.bits.uop.rd_tag,
+<                                                                                              Bool(false))
+305d290
+<    alu.io.in0 := op0_data.asUInt
+354,356d338
+<       /*****************************************************
+<        * logic for checking misprediction
+<        ****************************************************/
+455,474d436
+<       /*****************************************************
+<        * logic for IFT tag checking 
+<        *******************************************************/
+<       val is_bxx  = io.req.valid && !killed && uop.is_br_or_jmp && !uop.is_jump
+<       val is_jalr = io.req.valid && !killed && (uop.uopc === uopJALR)
+<       val is_jal  = io.req.valid && !killed && (uop.uopc === uopJAL)
+<       val bxx_tag_violation = uop.rs1_tag || uop.rs2_tag
+<       val jalr_tag_violation = uop.rs1_tag
+<       val tag_violation = (is_bxx && bxx_tag_violation) || (is_jalr && jalr_tag_violation)
+< 
+<       // if tag check failed, it's either jump to previous branch or halt
+<       if (DEBUG_IFT) {
+<          printf("uopc=%x, rs1_tag = %c, rs2_tag = %c\n",
+<            uop.uopc, 
+<            Mux(uop.rs1_tag, Str("C"), Str("P")),
+<            Mux(uop.rs2_tag, Str("C"), Str("P"))
+<          )
+<       }
+<       val tag_violation_confirmed = tag_violation && uop.br_mask =/= UInt(0)
+<       assert (!tag_violation_confirmed, "We encounter a BXX with private predicate, while no branch instruction prior to it")
+480d441
+<       val target = Mux(pc_sel === PC_PLUS4, pc_plus4, bj_addr)
+482a444,447
+>       br_unit.take_pc := mispredict
+>       val target = Mux(pc_sel === PC_PLUS4, pc_plus4, bj_addr)
+>       br_unit.target := target
+> 
+492,493c457,458
+<       brinfo.mispredict     := Mux(tag_violation_confirmed, Bool(true), mispredict)
+<       brinfo.mask           := UInt(1) << uop.br_tag  // indicating which branch we resolve here
+---
+>       brinfo.mispredict     := mispredict
+>       brinfo.mask           := UInt(1) << uop.br_tag
+506,509c471,474
+<       brinfo.btb_mispredict := Mux(tag_violation_confirmed, Bool(false), btb_mispredict)
+<       brinfo.bpd_mispredict := Mux(tag_violation_confirmed, Bool(false), bpd_mispredict)
+<       brinfo.btb_made_pred  := Mux(tag_violation_confirmed, Bool(false), uop.br_prediction.btb_blame)
+<       brinfo.bpd_made_pred  := Mux(tag_violation_confirmed, Bool(false), uop.br_prediction.bpd_blame)
+---
+>       brinfo.btb_mispredict := btb_mispredict
+>       brinfo.bpd_mispredict := bpd_mispredict
+>       brinfo.btb_made_pred  := uop.br_prediction.btb_blame
+>       brinfo.bpd_made_pred  := uop.br_prediction.bpd_blame
+527,539c492,504
+<       // don't update btb/ras if we have a valid ift check fail
+<       br_unit.btb_update.valid          := Mux(tag_violation_confirmed, Bool(false), br_unit.btb_update.valid)
+<       br_unit.btb_update.bits.pc        := io.get_ftq_pc.fetch_pc// tell the BTB which pc to tag check against
+<       br_unit.btb_update.bits.cfi_pc    := uop_pc_
+<       br_unit.btb_update.bits.target    := (target.asSInt & SInt(-coreInstBytes)).asUInt
+<       br_unit.btb_update.bits.taken     := is_taken   // was this branch/jal/jalr "taken"
+<       br_unit.btb_update.bits.cfi_type  :=  Mux(uop.is_jal, CfiType.jal,
+< 			                                Mux(uop.is_jump && !uop.is_jal, CfiType.jalr,
+< 				                                                            CfiType.branch))
+<       br_unit.btb_update.bits.bpd_type	:=  Mux(uop.is_ret,  BpredType.ret,
+< 			                                Mux(uop.is_call, BpredType.call,
+< 			                                Mux(uop.is_jump, BpredType.jump,
+< 				                                             BpredType.branch)))
+---
+>       br_unit.btb_update.bits.pc               := io.get_ftq_pc.fetch_pc// tell the BTB which pc to tag check against
+>       br_unit.btb_update.bits.cfi_pc           := uop_pc_
+>       br_unit.btb_update.bits.target           := (target.asSInt & SInt(-coreInstBytes)).asUInt
+>       br_unit.btb_update.bits.taken            := is_taken   // was this branch/jal/jalr "taken"
+>       br_unit.btb_update.bits.cfi_type         :=
+> 			Mux(uop.is_jal, CfiType.jal,
+> 			Mux(uop.is_jump && !uop.is_jal, CfiType.jalr,
+> 				CfiType.branch))
+>       br_unit.btb_update.bits.bpd_type			  :=
+> 			Mux(uop.is_ret, BpredType.ret,
+> 			Mux(uop.is_call, BpredType.call,
+> 			Mux(uop.is_jump, BpredType.jump,
+> 				BpredType.branch)))
+562,563d526
+<       br_unit.take_pc := mispredict
+<       br_unit.target := Mux(tag_violation_confirmed, uop_pc_, target)
+584,588d546
+<    val tag_out = Wire(Bool())
+<    tag_out := Mux(io.req.bits.uop.uopc === uopSEAL,   Bool(true),
+<               Mux(io.req.bits.uop.uopc === uopUNSEAL, Bool(false),
+<                   op1_tag || op2_tag || op0_tag))
+< 
+591d548
+<    val r_tag  = Reg(init = Vec.fill(num_stages) { Bool(false) })
+594d550
+<    r_tag(0)  := tag_out
+599d554
+<       r_tag(i)  := r_tag(i-1)
+602d556
+<    io.resp.bits.uop.rd_tag := r_tag(num_stages-1)
+610,611c564
+<    io.bypass.uop(0).rd_tag := tag_out
+<    for (i <- 1 until num_stages)  // num_bypass_stages === num_stages
+---
+>    for (i <- 1 until num_stages)
+615d567
+<       io.bypass.uop(i).rd_tag := r_tag(i-1)
+646d597
+<    // TODO: here io.resp.bits.addr/data decides whether it's orld/ocld
+699,701d649
+<    io.resp.bits.uop.rd_tag        := (fpu.io.resp.bits.uop.rs1_tag && fpu.io.resp.bits.uop.lrs1_rtype =/= RT_X) ||
+<                                      (fpu.io.resp.bits.uop.rs2_tag && fpu.io.resp.bits.uop.lrs2_rtype =/= RT_X) ||
+<                                      (fpu.io.resp.bits.uop.rs3_tag && fpu.io.resp.bits.uop.frs3_en)  // ift tag propagation
+743,744d690
+<    //io.resp.bits.uop.rd_tag        := ifpu.io.out.bits.uop.rs1_tag  // ift tag propagation
+<    io.resp.bits.uop.rd_tag        := io.resp.bits.uop.rs1_tag
+790,796c736,741
+<    muldiv.io.req.valid       := io.req.valid && !this.do_kill
+<    muldiv.io.req.bits.dw     := io.req.bits.uop.ctrl.fcn_dw
+<    muldiv.io.req.bits.fn     := io.req.bits.uop.ctrl.op_fcn
+<    muldiv.io.req.bits.in1    := io.req.bits.rs1_data
+<    muldiv.io.req.bits.in2    := io.req.bits.rs2_data
+<    muldiv.io.req.bits.rd_tag := io.req.bits.uop.rs1_tag || io.req.bits.uop.rs2_tag
+<    io.req.ready              := muldiv.io.req.ready
+---
+>    muldiv.io.req.valid    := io.req.valid && !this.do_kill
+>    muldiv.io.req.bits.dw  := io.req.bits.uop.ctrl.fcn_dw
+>    muldiv.io.req.bits.fn  := io.req.bits.uop.ctrl.op_fcn
+>    muldiv.io.req.bits.in1 := io.req.bits.rs1_data
+>    muldiv.io.req.bits.in2 := io.req.bits.rs2_data
+>    io.req.ready           := muldiv.io.req.ready
+799c744
+<    muldiv.io.kill            := this.do_kill
+---
+>    muldiv.io.kill         := this.do_kill
+802,805c747,749
+<    io.resp.valid             := muldiv.io.resp.valid && !this.do_kill
+<    muldiv.io.resp.ready      := io.resp.ready
+<    io.resp.bits.data         := muldiv.io.resp.bits.data
+<    io.resp.bits.uop.rd_tag   := muldiv.io.resp.bits.rd_tag
+---
+>    io.resp.valid          := muldiv.io.resp.valid && !this.do_kill
+>    muldiv.io.resp.ready   := io.resp.ready
+>    io.resp.bits.data      := muldiv.io.resp.bits.data
+816,821c760,764
+<    imul.io.valid  := io.req.valid
+<    imul.io.in0    := io.req.bits.rs1_data
+<    imul.io.in1    := io.req.bits.rs2_data
+<    imul.io.dw     := io.req.bits.uop.ctrl.fcn_dw
+<    imul.io.fn     := io.req.bits.uop.ctrl.op_fcn
+<    imul.io.in_tag := io.req.bits.uop.rs1_tag || io.req.bits.uop.rs2_tag
+---
+>    imul.io.valid := io.req.valid
+>    imul.io.in0   := io.req.bits.rs1_data
+>    imul.io.in1   := io.req.bits.rs2_data
+>    imul.io.dw    := io.req.bits.uop.ctrl.fcn_dw
+>    imul.io.fn    := io.req.bits.uop.ctrl.op_fcn
+824,825c767
+<    io.resp.bits.data       := imul.io.out
+<    io.resp.bits.uop.rd_tag := imul.io.out_tag
+---
+>    io.resp.bits.data      := imul.io.out
+diff -r ./imul.scala /home/jiyongy2/OISA_NDSS19/OISA_BOOM/boom/src/main/scala/exu/imul.scala
+18,25c18,23
+<       val valid   = Input (Bool())
+<       val fn      = Input (UInt(width=SZ_ALU_FN.W))
+<       val dw      = Input (UInt(width=SZ_DW.W))
+<       val in0     = Input (UInt(width=64.W))
+<       val in1     = Input (UInt(width=64.W))
+<       val in_tag  = Input (Bool())
+<       val out     = Output (UInt(width=64.W))
+<       val out_tag = Output (Bool())
+---
+>       val valid = Input(Bool())
+>       val fn  = Input  (UInt(width=SZ_ALU_FN.W))
+>       val dw  = Input  (UInt(width=SZ_DW.W))
+>       val in0 = Input  (UInt(width=64.W))
+>       val in1 = Input  (UInt(width=64.W))
+>       val out = Output (UInt(width=64.W))
+59,60c57
+<    io.out     := Pipe(io.valid, mul_output_mux, imul_stages).bits
+<    io.out_tag := Pipe(io.valid, io.in_tag,      imul_stages).bits
+---
+>    io.out := Pipe(io.valid, mul_output_mux, imul_stages).bits

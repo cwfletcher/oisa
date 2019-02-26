@@ -1,0 +1,104 @@
+;--------------------------------------------------------------------------
+;
+;This is a sample environment variable file containing the default
+;values for environment variables in Design Framework II products.
+;See the appropriate tool documentation regarding the use and
+;choices for each variable.
+;To customize your defaults, use this file as a template and place
+;a modified version of this file in ../local/.cdsenv.  This
+;local version should typically reflect the values of your system
+;defaults as set by your site coordinator.  To specify more personal
+;defaults, place a modified version of either this or the
+;../local/.cdsenv file into your home directory as .cdsenv.
+;Your ../local/.cdsenv file will be loaded first, followed
+;by the .cdsenv in your home directory, so any values in ~/.cdsenv
+;will override those previously loaded.
+;
+;==========================================================================
+
+;--------------------------------------------------------------------------
+; DLE variables
+;--------------------------------------------------------------------------
+adle mfactorSplit boolean nil
+;adle stopList string "layout"
+;adle viewList string "cmos_sch schematic"
+
+;--------------------------------------------------------------------------
+; Analog Artist Simulation Environment Defaults
+; FORMAT: tool[.partition] varName type value private {choices, minmax} comment
+;--------------------------------------------------------------------------
+asimenv.startup       simulator       string  "hspiceD"
+asimenv.startup       projectDir      string  "~/cadence/simulation"
+asimenv.window        x       int     100
+asimenv.window        y       int     480
+asimenv.plotting      width   int     900
+asimenv.plotting      height  int     700
+asimenv.plotting      x       int     100
+asimenv.plotting      y       int     40
+
+
+;--------------------------------------------------------------------------
+; cdsSpice environment variables
+;--------------------------------------------------------------------------
+;cdsSpice.envOpts    modelPath       string  "~/cadence/models /afs/eos/dist/cadence/local/models"
+
+
+;--------------------------------------------------------------------------
+; ddserv Environment Variables
+;--------------------------------------------------------------------------
+ddserv        showWhatsNew    string  "no"
+
+
+;--------------------------------------------------------------------------
+; Graphics Editor and Design Editor Environment Variables
+;--------------------------------------------------------------------------
+;graphic       drfPath string  "/afs/eos/dist/cadence/local/cdssetup/display.drf"
+
+
+;--------------------------------------------------------------------------
+; hspiceS environment variables
+;--------------------------------------------------------------------------
+;hspiceS.envOpts 	modelPath       string  "~/cadence/models/hspice /afs/eos/dist/cadence/local/models/hspice/public"
+
+
+;--------------------------------------------------------------------------
+;Layout Environment Variables
+;--------------------------------------------------------------------------
+layout        leWindowBBox    string  "((100 160) (1000 860))"
+layout        originMarkersOn boolean nil
+; the snap spacing is set to be a multiple of all the mfgGridResolutions
+; this is just to prevent warning messages; the correct value is set in
+; local/skill/misc/triggers.il
+layout        xSnapSpacing    float   6.0
+layout        ySnapSpacing    float   6.0
+layout        gravityOn       boolean nil
+layout        gravityType     string  ""
+
+
+;--------------------------------------------------------------------------
+; Schematic Editor Environment Variables
+;--------------------------------------------------------------------------
+schematic     browserType     string  "component"
+schematic     schWindowBBox   string  "((130 150) (1030 850))"
+schematic     symWindowBBox   string  "((130 150) (1030 850))"
+
+
+;--------------------------------------------------------------------------
+; spectreS environment variables
+;--------------------------------------------------------------------------
+;spectreS.envOpts    modelPath       string  "~/cadence/models/spectre /afs/eos/dist/cadence/local/models/spectre/public"
+
+
+;--------------------------------------------------------------------------
+; User Preference Defaults
+;--------------------------------------------------------------------------
+ui    showScrollBars  boolean t
+ui    showOptionForms boolean t
+ui    undoLevel       int     10
+
+;--------------------------------------------------------------------------
+; Try to stop the "out of memory" errors in cdsSpice
+;--------------------------------------------------------------------------
+;cdsSpice.init   languageSize    int     1000
+;spectreS.init   languageSize    int     1000
+;hspiceS.init    languageSize    int     1000

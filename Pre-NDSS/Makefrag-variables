@@ -1,0 +1,64 @@
+# Consolidate Makefile variables that are shared across simulator types.
+
+# check RISCV environment variable
+ifndef RISCV
+$(error Please set environment variable RISCV. Please take a look at README)
+endif
+
+
+ROCKETCHIP_DIR=$(base_dir)/rocket-chip
+EXTRA_PACKAGES=boom
+
+PROJECT ?= boom.system
+MODEL ?= TestHarness
+CONFIG ?= BoomConfig
+CFG_PROJECT ?= $(PROJECT)
+TB ?= TestDriver
+
+long_name = $(PROJECT).$(MODEL).$(CONFIG)
+
+SBT ?= java -Xmx2G -Xss8M -jar $(ROCKETCHIP_DIR)/sbt-launch.jar
+
+ROCKET_CLASSES ?= "$(ROCKETCHIP_DIR)/target/scala-2.11/classes:$(ROCKETCHIP_DIR)/chisel3/target/scala-2.11/*"
+FIRRTL_JAR ?= $(ROCKETCHIP_DIR)/firrtl/utils/bin/firrtl.jar
+FIRRTL ?= java -Xmx2G -Xss8M -cp "$(FIRRTL_JAR)":"$(ROCKET_CLASSES)" firrtl.Driver
+
+EXTRA_FIRRTL_ARGS ?=
+
+CHISEL_ARGS ?=
+
+VLSI_MEM_GEN ?= $(base_dir)/rocket-chip/scripts/vlsi_mem_gen
+mem_gen = $(VLSI_MEM_GEN)
+
+# TODO: BOOTROM specified only for dependence tracking.
+#  Remove this as we may choose to use different bootroms?
+#  Or can we make a dependency rule that searches for any and all bootroms in this project?
+bootrom_img = $(base_dir)/rocket-chip/bootrom/bootrom.img
+
+sim_vsrcs = \
+	$(build_dir)/$(long_name).v \
+	$(base_dir)/rocket-chip/src/main/resources/vsrc/AsyncResetReg.v \
+#	$(base_dir)/testchipip/vsrc/SimBlockDevice.v \
+#	$(base_dir)/testchipip/vsrc/SimSerial.v \
+
+sim_csrcs = \
+	$(base_dir)/rocket-chip/src/main/resources/csrc/SimDTM.cc \
+	$(base_dir)/rocket-chip/src/main/resources/csrc/SimJTAG.cc \
+	$(base_dir)/rocket-chip/src/main/resources/csrc/remote_bitbang.cc \
+#	$(base_dir)/testchipip/csrc/blkdev.cc \
+#	$(base_dir)/testchipip/csrc/SimBlockDevice.cc \
+#	$(base_dir)/testchipip/csrc/SimSerial.cc \
+#	$(base_dir)/testchipip/csrc/verilator-harness.cc
+
+
+# Assembly/Benchmark Testing
+disasm := 2>
+which_disasm := $(shell which spike-dasm 2> /dev/null)
+ifneq ($(which_disasm),)
+  disasm := 3>&1 1>&2 2>&3 | $(which_disasm) $(DISASM_EXTENSION) >
+endif
+
+timeout_cycles = 10000000
+bmark_timeout_cycles = 100000000
+
+junk += $(output_dir)
