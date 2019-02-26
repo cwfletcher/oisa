@@ -1,17 +1,16 @@
 # Data Oblivious ISA Extensions for Side Channel-Resistant and High Performance Computing (Hardware)
 
-## 0. Current status (Pre-NDSS)
-We use this version mainly for hardware area overhead analysis (the performance aspect is analyzed on a different framework).
-
-We are currently working on another up-to-date version which can be run on a FPGA board. The code will be updated shortly.
-
 ## 1. About this paper
 
 This paper is published in Network and Distributed System Security Symposium (NDSS) in 2019. The eprint version can be found [here](https://eprint.iacr.org/2018/808.pdf).
 
 ## 2. Introduction
 
-This is a modfied version of RISCV-BOOM(Berkley Out-of-Order Machine). We augment both ISA and hardware to provide support for basic oblivious execution. 
+This is a modfied version of the RISCV-BOOM (Berkley Out-of-Order Machine). We augment both the ISA and the hardware to support the Data Oblivious ISA extension.  Recall from the paper, the ISA extension is broken into two parts:
+
+1.) A mechanism for Software to tell Hardware what data is sensitive (Confidential).  This is implemented with a new Dynamic Information Flow Tracking scheme that requires tags to follow data in every pipeline stage (not just retirement).
+
+2.) A mechanism for Hardware to tell Software what operations (instructions) may leak privacy.  This is implemented by augmenting existing instructions (and adding new instructions) with additional semantics to indicate whether each instruction operand is Safe/Unsafe to receive confidential data.
 
 Since the first-priority goal of HW implementation is to evaluate frequency and hardware overhead, this version does not support certain instruction types listed in the paper.
 
