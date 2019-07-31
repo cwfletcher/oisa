@@ -4,7 +4,7 @@
 
 This paper is published in Network and Distributed System Security Symposium (NDSS) in 2019. The eprint version can be found [here](https://eprint.iacr.org/2018/808.pdf).
 
-Yu, Jiyong, Lucas Hsiung, Mohamad El'Hajj, and Christopher W. Fletcher. "Data Oblivious ISA Extensions for Side Channel-Resistant and High Performance Computing." In The Network and Distributed System Security Symposium (NDSS). 2019.
+Jiyong Yu, Lucas Hsiung, Mohamad El'Hajj, and Christopher W. Fletcher. "Data Oblivious ISA Extensions for Side Channel-Resistant and High Performance Computing." In The Network and Distributed System Security Symposium (NDSS). 2019.
 
 ```
 @inproceedings{yu2019data,
