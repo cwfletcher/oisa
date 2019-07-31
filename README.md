@@ -4,6 +4,17 @@
 
 This paper is published in Network and Distributed System Security Symposium (NDSS) in 2019. The eprint version can be found [here](https://eprint.iacr.org/2018/808.pdf).
 
+Yu, Jiyong, Lucas Hsiung, Mohamad El'Hajj, and Christopher W. Fletcher. "Data Oblivious ISA Extensions for Side Channel-Resistant and High Performance Computing." In The Network and Distributed System Security Symposium (NDSS). 2019.
+
+```
+@inproceedings{yu2019data,
+  title={Data Oblivious ISA Extensions for Side Channel-Resistant and High Performance Computing},
+  author={Yu, Jiyong and Hsiung, Lucas and El'Hajj, Mohamad and Fletcher, Christopher W},
+  booktitle={The Network and Distributed System Security Symposium (NDSS)},
+  year={2019}
+}
+```
+
 ## 2. Introduction
 
 This is a modfied version of the RISCV-BOOM (Berkley Out-of-Order Machine). We augment both the ISA and the hardware to support the Data Oblivious ISA extension.  Recall from the paper, the ISA extension is broken into two parts:
