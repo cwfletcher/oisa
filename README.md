@@ -44,8 +44,8 @@ Since the first-priority goal of HW implementation is to evaluate frequency and 
 (How to use BOOM can be found [here](https://github.com/esperantotech/boom-template))
 ### 1) Clone the project, build a BOOM verilator and its corresponding RISC-V toolchain:
 ```
-git clone https://github.com/jiyongyu/OISA_BOOM
-cd OISA_BOOM
+git clone https://github.com/cwfletcher/oisa
+cd Pre-NDSS
 ./scripts/init-submodules.sh
 ./scripts/build-tools.sh
 cd verisim
