@@ -7,3 +7,6 @@
 [submodule "Pre-NDSS/rocket-chip/firrtl"]
 	path = Pre-NDSS/rocket-chip/firrtl
 	url = https://github.com/chipsalliance/firrtl.git
+[submodule "Pre-NDSS/rocket-chip/hardfloat"]
+	path = Pre-NDSS/rocket-chip/hardfloat
+	url = https://github.com/ucb-bar/berkeley-hardfloat.git
