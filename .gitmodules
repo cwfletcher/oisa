@@ -1,3 +1,6 @@
 [submodule "Pre-NDSS/torture"]
 	path = Pre-NDSS/torture
 	url = https://github.com/ucb-bar/riscv-torture.git
+[submodule "Pre-NDSS/rocket-chip/chisel3"]
+	path = Pre-NDSS/rocket-chip/chisel3
+	url = https://github.com/chipsalliance/chisel3.git
