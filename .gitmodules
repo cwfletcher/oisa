@@ -10,3 +10,6 @@
 [submodule "Pre-NDSS/rocket-chip/hardfloat"]
 	path = Pre-NDSS/rocket-chip/hardfloat
 	url = https://github.com/ucb-bar/berkeley-hardfloat.git
+[submodule "Pre-NDSS/rocket-chip/riscv-tools"]
+	path = Pre-NDSS/rocket-chip/riscv-tools
+	url = https://github.com/riscv-software-src/riscv-tools.git
