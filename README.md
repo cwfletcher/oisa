@@ -44,6 +44,10 @@ Since the first-priority goal of HW implementation is to evaluate frequency and 
 (How to use BOOM can be found [here](https://github.com/esperantotech/boom-template))
 ### 1) Clone the project, build a BOOM verilator and its corresponding RISC-V toolchain:
 ```
+# You may want to add the following two lines to your shell profile
+export RISCV=/path/to/install/dir
+export PATH=$RISCV/bin:$PATH
+
 git clone https://github.com/cwfletcher/oisa
 cd Pre-NDSS
 ./scripts/init-submodules.sh
